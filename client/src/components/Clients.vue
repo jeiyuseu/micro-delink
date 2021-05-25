@@ -390,11 +390,12 @@
 				this.dialogDelete = true
 			},
 			editClientInfo: async function(item) {
+				const [year, month, day] = item.birthdate !== null ? item.birthdate.split('-') : []
 				this.dialogInfoEdit.id = item.uuid
 				this.dialogInfoEdit.firstName = item.firstName
 				this.dialogInfoEdit.lastName = item.lastName
 				this.dialogInfoEdit.middleInitial = item.middleInitial
-				this.dialogInfoEdit.birthdate = item.birthdate === null ? '' : item.birthdate
+				this.dialogInfoEdit.birthdate = item.birthdate === null ? '' : month + '/' + day + '/' + year
 				this.dialogInfoEdit.contactNo = item.contactNo
 				this.dialogInfoEdit.address = item.address
 				this.dialogEdit = true
