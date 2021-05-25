@@ -1,15 +1,4 @@
-const {
-	Gp2Info,
-	Gp2Clients,
-	Gp2Details,
-	Branch,
-	Staffs,
-	Clients,
-	Users,
-	Gp2InfoCode,
-	Op,
-	sequelize,
-} = require('../models')
+const { Gp2Info, Gp2Clients, Gp2Details, Branch, Staffs, Clients, Users, Gp2InfoCode, Op, sequelize } = require('../models')
 
 module.exports = {
 	index: async (req, res) => {
@@ -31,23 +20,13 @@ module.exports = {
 							['gp2InfoCodeId', 'ASC'],
 						],
 						separate: true,
-						attributes: [
-							'id',
-							'uuid',
-							'weeksToPay',
-							'loanCycle',
-							'dateOfFirstPayment',
-							'dateOfReleased',
-							'dateOfLastPayment',
-							'gp2InfoId',
-						],
-
+						attributes: ['id', 'uuid', 'weeksToPay', 'loanCycle', 'dateOfFirstPayment', 'dateOfReleased', 'dateOfLastPayment', 'gp2InfoId'],
 						where: sequelize.where(sequelize.col('gp2Clients.lr'), filter, 0),
 						include: [
 							{
 								model: Gp2Clients,
 								as: 'gp2Clients',
-								order: [['createdAt', 'DESC']],
+
 								where: sequelize.where(sequelize.col('lr'), filter, 0),
 								include: [
 									{
@@ -58,6 +37,7 @@ module.exports = {
 									{
 										model: Clients,
 										as: 'clientInfo',
+										order: [['firstName', 'ASC']],
 										attributes: ['uuid', 'firstName', 'middleInitial', 'lastName', 'slug'],
 									},
 								],
@@ -115,6 +95,7 @@ module.exports = {
 			// 	logging: true,
 			// 	where: { codeName: code },
 			// })
+
 			const payload = {}
 			const gp2Info = []
 
@@ -175,10 +156,7 @@ module.exports = {
 			}
 			const clientId = await Clients.findAndCountAll({
 				where: {
-					[Op.or]: [
-						{ uuid: req.body.client.client1.clientId },
-						{ uuid: req.body.client.client2.clientId },
-					],
+					[Op.or]: [{ uuid: req.body.client.client1.clientId }, { uuid: req.body.client.client2.clientId }],
 				},
 			})
 
@@ -189,9 +167,7 @@ module.exports = {
 				},
 			})
 
-			const errors = isClientExists.rows.map(
-				(value) => value.clientInfo.firstName + ' ' + value.clientInfo.lastName + ' is exists!'
-			)
+			const errors = isClientExists.rows.map((value) => value.clientInfo.firstName + ' ' + value.clientInfo.lastName + ' is exists!')
 
 			if (isClientExists.count > 0) {
 				return res.status(400).send({ error: errors })
@@ -220,10 +196,7 @@ module.exports = {
 
 			if (gp2infocount <= 20) {
 				const client1 = {}
-				const lr1 =
-					req.body.info.weeksToPay === 18
-						? (req.body.client.client1.loanAmount * 124.2) / 100
-						: (req.body.client.client1.loanAmount * 120) / 100
+				const lr1 = req.body.info.weeksToPay === 16 && req.body.client.client1.loanAmount * 1.2
 
 				client1.clientId = clientId.rows[0].id
 
@@ -234,10 +207,7 @@ module.exports = {
 				client1.pastDue = 0
 
 				const client2 = {}
-				const lr2 =
-					req.body.info.weeksToPay === 18
-						? (req.body.client.client2.loanAmount * 124.2) / 100
-						: (req.body.client.client2.loanAmount * 120) / 100
+				const lr2 = req.body.info.weeksToPay === 16 && req.body.client.client2.loanAmount * 1.2
 
 				client2.clientId = clientId.rows[1].id
 				client2.loanAmount = parseInt(req.body.client.client2.loanAmount)
@@ -260,9 +230,7 @@ module.exports = {
 				})
 			} else {
 				return res.status(400).send({
-					error: [
-						`Clients is already full for "${gp2infocodeexists.name}", maximum of 20 clients!`,
-					],
+					error: [`Clients is already full for "${gp2infocodeexists.name}", maximum of 20 clients!`],
 				})
 			}
 		} catch (error) {
@@ -306,14 +274,9 @@ module.exports = {
 			const lr = gp2Clients.lr - installment
 			const skCum = gp2Clients.skCum + sk
 
-			await Gp2Clients.update(
-				{ lr, skCum, pastDue, updatedBy: authUser.id },
-				{ where: { uuid: gp2Clients.uuid } }
-			)
+			await Gp2Clients.update({ lr, skCum, pastDue, updatedBy: authUser.id }, { where: { uuid: gp2Clients.uuid } })
 
-			return res
-				.status(200)
-				.send({ success: true, msg: clients.firstName + ' ' + clients.lastName + ' is updated!' })
+			return res.status(200).send({ success: true, msg: clients.firstName + ' ' + clients.lastName + ' is updated!' })
 		} catch (error) {
 			return res.status(400).send({ success: false, msg: error.message })
 		}
@@ -361,14 +324,9 @@ module.exports = {
 		const [clientSlug, clientUuid] = uuid.split('.')
 		try {
 			const gp2detailsfind = await Gp2Details.findOne({ where: { uuid: id } })
-			let gp2details = await Gp2Details.update(
-				{ payment, sk, penalty },
-				{ where: { uuid: id }, returning: true }
-			)
+			let gp2details = await Gp2Details.update({ payment, sk, penalty }, { where: { uuid: id }, returning: true })
 			let gp2clients = await Gp2Clients.findOne({
-				include: [
-					{ model: Clients, as: 'clientInfo', where: { uuid: clientUuid, slug: clientSlug } },
-				],
+				include: [{ model: Clients, as: 'clientInfo', where: { uuid: clientUuid, slug: clientSlug } }],
 			})
 			gp2details = gp2details[1]
 
@@ -384,10 +342,7 @@ module.exports = {
 
 			const clients = await Clients.findOne({ where: { uuid: clientUuid, slug: clientSlug } })
 
-			gp2clients = await Gp2Clients.update(
-				{ skCum: payload.sk },
-				{ where: { clientId: clients.id } }
-			)
+			gp2clients = await Gp2Clients.update({ skCum: payload.sk }, { where: { clientId: clients.id } })
 			return res.status(200).send({ success: true, msg: gp2clients })
 		} catch (error) {
 			return res.status(500).send({ success: false, msg: error.message })
@@ -400,8 +355,7 @@ module.exports = {
 		let payload = {}
 
 		Object.values(client).forEach((data, i) => {
-			const lr =
-				info.weeksToPay === 18 ? (data.loanAmount * 124.2) / 100 : (data.loanAmount * 120) / 100
+			const lr = info.weeksToPay === 16 && data.loanAmount * 1.2
 			payload[i] = {
 				uuid: data.clientId,
 				lr,

@@ -11,9 +11,7 @@
 					</div>
 
 					<div slot="modal-text">
-						<v-alert dense outlined type="error" v-for="(error, index) in errors" :key="index">{{
-							error
-						}}</v-alert>
+						<v-alert dense outlined type="error" v-for="(error, index) in errors" :key="index">{{ error }}</v-alert>
 						<v-form @submit.prevent="addGp2" ref="formStaffClients">
 							<v-container>
 								<v-radio-group v-model="chkBoxInfoDesc" mandatory>
@@ -53,14 +51,7 @@
 								</v-radio-group>
 								<v-row>
 									<v-col cols="6">
-										<v-menu
-											ref="menu"
-											:close-on-content-click="false"
-											transition="scale-transition"
-											offset-y
-											max-width="290px"
-											min-width="auto"
-										>
+										<v-menu ref="dateOfReleased" v-model="menuDateOfReleased" :close-on-content-click="false" transition="scale-transition" offset-y max-width="290px" min-width="auto">
 											<template v-slot:activator="{ on, attrs }">
 												<v-text-field
 													v-model.trim="staffClientForm.info.dateOfReleased"
@@ -69,30 +60,19 @@
 													v-bind="attrs"
 													v-mask="'####-##-##'"
 													v-on="on"
+													clearable
 													autocomplete="off"
-													:rules="[
-														() =>
-															!!staffClientForm.info.dateOfReleased ||
-															'Date of released is required!',
-													]"
+													:rules="[(v) => !!v || 'Date of released is required!']"
 												></v-text-field>
 											</template>
 
-											<v-date-picker
-												v-model.trim="staffClientForm.info.dateOfReleased"
-												no-title
-												scrollable
-											>
+											<v-date-picker v-model.trim="staffClientForm.info.dateOfReleased" no-title scrollable>
 												<v-spacer></v-spacer>
 												<div class="justify-end">
-													<v-btn text color="primary" @click="menu = false">
+													<v-btn text color="primary" @click="menuDateOfReleased = false">
 														Cancel
 													</v-btn>
-													<v-btn
-														text
-														color="primary"
-														@click="$refs.menu.save(staffClientForm.info.dateOfReleased)"
-													>
+													<v-btn text color="primary" @click="$refs.dateOfReleased.save(staffClientForm.info.dateOfReleased)">
 														OK
 													</v-btn>
 												</div>
@@ -101,65 +81,40 @@
 									</v-col>
 									<v-col cols="6">
 										<v-select
-											:items="[
-												{ desc: '18 Weeks', value: 18 },
-												{ desc: '24 Weeks', value: 24 },
-											]"
+											:items="[{ desc: '16 Weeks', value: 16 }]"
 											item-text="desc"
 											item-value="value"
 											prepend-inner-icon="mdi-view-week"
 											label="* Loan Term"
 											@change="loanTerm"
 											v-model="staffClientForm.info.weeksToPay"
-											:rules="[() => !!staffClientForm.info.weeksToPay || 'Loan Term is required!']"
+											:rules="[(v) => !!v || 'Loan Term is required!']"
 										></v-select>
-										<!-- <v-text-field label="Code # will be" name="branchName" value="GP2" readonly>
-                    </v-text-field> -->
 									</v-col>
 								</v-row>
 								<v-row>
 									<v-col cols="6">
-										<v-menu
-											ref="menu"
-											:close-on-content-click="false"
-											transition="scale-transition"
-											offset-y
-											max-width="290px"
-											min-width="auto"
-										>
+										<v-menu ref="dateOfFirstPayment" v-model="menuFirstOfPayment" :close-on-content-click="false" transition="scale-transition" offset-y max-width="290px" min-width="auto">
 											<template v-slot:activator="{ on, attrs }">
 												<v-text-field
 													v-model.trim="staffClientForm.info.dateOfFirstPayment"
 													label="* Date of First Payment"
-													v-mask="'####-##-##'"
 													autocomplete="off"
 													v-bind="attrs"
 													v-on="on"
+													clearable
 													prepend-inner-icon="mdi-calendar"
-													:rules="[
-														() =>
-															!!staffClientForm.info.dateOfFirstPayment ||
-															'Date of first payment is required!',
-													]"
+													:rules="[(v) => !!v || 'Date of first payment is required!']"
 												></v-text-field>
 											</template>
 
-											<v-date-picker
-												v-model.trim="staffClientForm.info.dateOfFirstPayment"
-												no-title
-												@change="loanTerm"
-												scrollable
-											>
+											<v-date-picker v-model.trim="staffClientForm.info.dateOfFirstPayment" no-title @change="loanTerm" scrollable>
 												<v-spacer></v-spacer>
 												<div class="justify-end">
-													<v-btn text color="primary" @click="menu = false">
+													<v-btn text color="primary" @click="menuFirstOfPayment = false">
 														Cancel
 													</v-btn>
-													<v-btn
-														text
-														color="primary"
-														@click="$refs.menu.save(staffClientForm.info.dateOfFirstPayment)"
-													>
+													<v-btn text color="primary" @click="$refs.dateOfFirstPayment.save(staffClientForm.info.dateOfFirstPayment)">
 														OK
 													</v-btn>
 												</div>
@@ -167,13 +122,7 @@
 										</v-menu>
 									</v-col>
 									<v-col cols="6">
-										<v-text-field
-											v-model.trim="staffClientForm.info.dateOfLastPayment"
-											label="* Date of Last Payment"
-											autocomplete="off"
-											prepend-inner-icon="mdi-calendar"
-											readonly
-										></v-text-field>
+										<v-text-field v-model.trim="staffClientForm.info.dateOfLastPayment" label="* Date of Last Payment" autocomplete="off" prepend-inner-icon="mdi-calendar" readonly></v-text-field>
 									</v-col>
 								</v-row>
 								<v-row>
@@ -181,22 +130,11 @@
 										<v-autocomplete
 											label="Client 1"
 											:items="CLIENT_GETT_DATA_ALL.clients"
-											:item-text="
-												(item) =>
-													(
-														item.firstName +
-														' ' +
-														item.middleInitial +
-														' ' +
-														item.lastName
-													).toUpperCase()
-											"
+											:item-text="(item) => (item.firstName + ' ' + item.middleInitial + ' ' + item.lastName).toUpperCase()"
 											item-value="uuid"
 											prepend-inner-icon="mdi-account-plus"
 											clearable
-											:rules="[
-												() => !!staffClientForm.client.client1.clientId || 'Must have a client!',
-											]"
+											:rules="[(v) => !!v || 'Must have a client!']"
 											v-model="staffClientForm.client.client1.clientId"
 										>
 										</v-autocomplete>
@@ -210,13 +148,7 @@
 											class="branch-name"
 											prepend-inner-icon="mdi-currency-php"
 											v-model.trim.number="staffClientForm.client.client1.loanAmount"
-											:rules="[
-												() =>
-													!!staffClientForm.client.client1.loanAmount ||
-													'Date of last payment is required!',
-												,
-												(v) => /^[0-9]+$/.test(v) || 'Numbers only!',
-											]"
+											:rules="[(v) => !!v || 'Date of last payment is required!', (v) => /^[0-9]+$/.test(v) || 'Numbers only!']"
 										>
 										</v-text-field>
 									</v-col>
@@ -226,23 +158,12 @@
 										<v-autocomplete
 											label="Client 2"
 											:items="CLIENT_GETT_DATA_ALL.clients"
-											:item-text="
-												(item) =>
-													(
-														item.firstName +
-														' ' +
-														item.middleInitial +
-														' ' +
-														item.lastName
-													).toUpperCase()
-											"
+											:item-text="(item) => (item.firstName + ' ' + item.middleInitial + ' ' + item.lastName).toUpperCase()"
 											item-value="uuid"
 											prepend-inner-icon="mdi-account-plus"
 											clearable
 											v-model="staffClientForm.client.client2.clientId"
-											:rules="[
-												() => !!staffClientForm.client.client2.clientId || 'Must have a client!',
-											]"
+											:rules="[(v) => !!v || 'Must have a client!']"
 										>
 										</v-autocomplete>
 									</v-col>
@@ -254,30 +175,17 @@
 											prepend-inner-icon="mdi-currency-php"
 											autocomplete="off"
 											type="number"
-											:rules="[
-												() =>
-													!!staffClientForm.client.client2.loanAmount || 'Loan amount is required!',
-											]"
+											:rules="[(v) => !!v || 'Loan amount is required!']"
 										>
 										</v-text-field
 									></v-col>
 								</v-row>
 							</v-container>
 							<v-card-actions class="justify-end">
-								<v-btn
-									color="primary darken-1"
-									text
-									@click=";(dialog = !dialog), $refs.formStaffClients.reset(), (errors = [])"
-								>
+								<v-btn color="primary darken-1" text @click=";(dialog = !dialog), $refs.formStaffClients.reset(), (errors = [])">
 									Close
 								</v-btn>
-								<v-btn
-									color="primary darken-2 "
-									class="font-weight-black"
-									:loading="btnAddClient"
-									type="submit"
-									text
-								>
+								<v-btn color="primary darken-2 " class="font-weight-black" :loading="btnAddClient" type="submit" text>
 									Add
 								</v-btn>
 							</v-card-actions>
@@ -290,22 +198,9 @@
 						<v-form @submit.prevent="updateGp2" ref="formClientUpdate">
 							<v-row>
 								<v-col cols="6">
-									<v-text-field
-										label="Loan Receivable"
-										class="text-right"
-										:value="this.dialogUpdateInfos.lr.toLocaleString()"
-										readonly
-									>
-									</v-text-field>
+									<v-text-field label="Loan Receivable" class="text-right" :value="this.dialogUpdateInfos.lr.toLocaleString()" readonly> </v-text-field>
 								</v-col>
-								<v-col cols="6">
-									<v-text-field
-										label="Weekly Installment"
-										:value="this.dialogUpdateInfos.wi.toLocaleString()"
-										readonly
-									>
-									</v-text-field
-								></v-col>
+								<v-col cols="6"> <v-text-field label="Weekly Installment" :value="this.dialogUpdateInfos.wi.toLocaleString()" readonly> </v-text-field></v-col>
 							</v-row>
 							<v-row>
 								<v-col cols="4">
@@ -313,58 +208,24 @@
 										v-model.number="clientUpdateForm.installment"
 										label="Installment"
 										type="number"
-										:rules="[
-											() => !!clientUpdateForm.installment || 'Installment is required!',
-											(v) => v >= 0 || 'Invalid Number',
-										]"
+										:rules="[(v) => !!v || 'Installment is required!', (v) => v >= 0 || 'Invalid Number']"
 										autocomplete="off"
 									>
 									</v-text-field>
 								</v-col>
 								<v-col cols="4">
-									<v-text-field
-										v-model.number="clientUpdateForm.sk"
-										:rules="[
-											() => !!clientUpdateForm.sk || 'SK is required!',
-											(v) => v >= 0 || 'Invalid Number',
-										]"
-										label="SK"
-										type="number"
-										autocomplete="off"
-									>
+									<v-text-field v-model.number="clientUpdateForm.sk" :rules="[(v) => !!v || 'SK is required!', (v) => v >= 0 || 'Invalid Number']" label="SK" type="number" autocomplete="off">
 									</v-text-field
 								></v-col>
 								<v-col cols="4">
-									<v-text-field
-										label="Penalty"
-										v-model.number="clientUpdateForm.penalty"
-										type="number"
-										:rules="[(v) => v >= 0 || 'Invalid Number']"
-										autocomplete="off"
-									>
-									</v-text-field>
+									<v-text-field label="Penalty" v-model.number="clientUpdateForm.penalty" type="number" :rules="[(v) => v >= 0 || 'Invalid Number']" autocomplete="off"> </v-text-field>
 								</v-col>
 							</v-row>
 							<v-card-actions class="justify-end">
-								<v-btn
-									color="primary darken-1"
-									text
-									@click="
-										;(dialogUpdate = !dialogUpdate),
-											resetFields,
-											$refs.formClientUpdate.resetValidation(),
-											resetFields()
-									"
-								>
+								<v-btn color="primary darken-1" text @click=";(dialogUpdate = !dialogUpdate), resetFields, $refs.formClientUpdate.resetValidation(), resetFields()">
 									Close
 								</v-btn>
-								<v-btn
-									color="primary darken-1"
-									:loading="btnUpdateClient"
-									:disabled="btnUpdateClient"
-									type="submit"
-									text
-								>
+								<v-btn color="primary darken-1" :loading="btnUpdateClient" :disabled="btnUpdateClient" type="submit" text>
 									Update
 								</v-btn>
 							</v-card-actions>
@@ -383,27 +244,13 @@
 									</v-icon>
 									Add Clients
 								</v-btn>
-								<v-btn
-									:to="`${$route.params.codename}/completed-accounts`"
-									outlined
-									rounded
-									color="success"
-									dark
-									class="mr-3"
-								>
+								<v-btn :to="`${$route.params.codename}/completed-accounts`" outlined rounded color="success" dark class="mr-3">
 									<v-icon left dark>
 										mdi-check
 									</v-icon>
 									Completed Accounts
 								</v-btn>
-								<v-btn
-									@click="this.export"
-									:loading="btnExport"
-									outlined
-									rounded
-									color="success"
-									dark
-								>
+								<v-btn @click="this.export" :loading="btnExport" outlined rounded color="success" dark>
 									<v-icon left dark>
 										mdi-file-excel
 									</v-icon>
@@ -413,23 +260,8 @@
 						</v-row>
 					</v-card-text>
 				</v-card>
-				<v-card-title>
-					<v-text-field
-						v-model="search"
-						append-icon="mdi-magnify"
-						label="Search clients..."
-						single-line
-						hide-details
-					></v-text-field
-				></v-card-title>
-				<v-data-table
-					:headers="headers"
-					:items="GP2_GETT_DATA.gp2Info"
-					:expanded.sync="expanded"
-					:single-expand="false"
-					item-key="uuid"
-					class="elevation-2"
-				>
+				<v-card-title> <v-text-field v-model="search" append-icon="mdi-magnify" label="Search clients..." single-line hide-details></v-text-field></v-card-title>
+				<v-data-table :headers="headers" :items="GP2_GETT_DATA.gp2Info" :expanded.sync="expanded" :single-expand="false" item-key="uuid" class="elevation-2">
 					<template v-slot:item="{ item, expand, isExpanded }">
 						<tr class="blue darken-4 white--text" v-if="item.gp2Clients.length">
 							<td>{{ item.id }}</td>
@@ -440,9 +272,7 @@
 							<td>{{ moment(item.dateOfFirstPayment).format('MMMM DD, YYYY') }}</td>
 							<td>{{ moment(item.dateOfLastPayment).format('MMMM DD, YYYY') }}</td>
 							<td class="text-center">
-								<v-icon dark @click="expand(!isExpanded), (show = !show)">
-									{{ isExpanded ? 'mdi-arrow-right' : 'mdi-arrow-down' }}</v-icon
-								>
+								<v-icon dark @click="expand(!isExpanded), (show = !show)"> {{ isExpanded ? 'mdi-arrow-right' : 'mdi-arrow-down' }}</v-icon>
 							</td>
 						</tr>
 					</template>
@@ -457,48 +287,24 @@
 							<th>Updated By</th>
 							<th class="text-center">Action</th>
 						</tr>
-						<tr v-for="(client, i) in item.gp2Clients" :key="i">
+						<tr v-for="(client, i) in item.gp2Clients" :key="client.uuid">
 							<td colspan="2">
 								{{ i + 1 }}.
-								{{
-									(
-										client.clientInfo.firstName +
-										' ' +
-										client.clientInfo.middleInitial +
-										' ' +
-										client.clientInfo.lastName
-									).toUpperCase()
-								}}
+								{{ (client.clientInfo.firstName + ' ' + client.clientInfo.middleInitial + ' ' + client.clientInfo.lastName).toUpperCase() }}
 							</td>
 							<td>₱ {{ client.lr.toLocaleString() }}</td>
 							<td>₱ {{ client.skCum.toLocaleString() }}</td>
 							<td>₱ {{ client.wi.toLocaleString() }}</td>
 							<td>₱ {{ client.pastDue.toLocaleString() }}</td>
 							<td>
-								{{
-									client.userInfo !== null
-										? (client.userInfo.firstName + ' ' + client.userInfo.lastName).toUpperCase()
-										: ''
-								}}
-								{{
-									client.userInfo !== null
-										? moment(client.updatedAt).fromNow()
-											? ' | ' + moment(client.updatedAt).fromNow()
-											: ''
-										: ''
-								}}
+								{{ client.userInfo !== null ? (client.userInfo.firstName + ' ' + client.userInfo.lastName).toUpperCase() : '' }}
+								{{ client.userInfo !== null ? (moment(client.updatedAt).fromNow() ? ' | ' + moment(client.updatedAt).fromNow() : '') : '' }}
 							</td>
 							<td class="text-center">
 								<v-icon color="warning" class="mr-2" @click="dialogUpdateInfo(client, item)">
 									mdi-pencil
 								</v-icon>
-								<v-btn
-									icon
-									color="info"
-									:to="
-										`${$route.params.codename}-gp2/${client.clientInfo.slug}.${client.clientInfo.uuid}`
-									"
-								>
+								<v-btn icon color="info" :to="`${$route.params.codename}/${client.clientInfo.slug}.${client.clientInfo.uuid}`">
 									<v-icon>
 										mdi-eye
 									</v-icon>
@@ -557,9 +363,9 @@
 				search: '',
 				errors: [],
 				btnExport: false,
-
-				chkBoxInfoDesc: null,
-
+				chkBoxInfoDesc: 'existing',
+				menuDateOfReleased: false,
+				menuFirstOfPayment: false,
 				dialogUpdateInfos: {
 					name: '',
 					lr: '',
@@ -707,25 +513,13 @@
 			},
 
 			loanTerm() {
-				if (this.staffClientForm.info.weeksToPay === 18) {
+				if (this.staffClientForm.info.weeksToPay === 16) {
 					const date = new Date(this.staffClientForm.info.dateOfFirstPayment)
-					date.setDate(date.getDate() + 126)
+					date.setDate(date.getDate() + 112)
 					const newMonth = '0' + (date.getMonth() + 1)
 					const newDate = '0' + date.getDate()
 					const newYear = date.getFullYear()
-
-					this.staffClientForm.info.dateOfLastPayment = newYear
-						? `${newYear}-${newMonth.slice(-2)}-${newDate.slice(-2)}`
-						: ''
-				} else if (this.staffClientForm.info.weeksToPay === 24) {
-					const date = new Date(this.staffClientForm.info.dateOfFirstPayment)
-					date.setDate(date.getDate() + 168)
-					const newMonth = '0' + (date.getMonth() + 1)
-					const newDate = '0' + date.getDate()
-					const newYear = date.getFullYear()
-					this.staffClientForm.info.dateOfLastPayment = newYear
-						? `${newYear}-${newMonth.slice(-2)}-${newDate.slice(-2)}`
-						: ''
+					this.staffClientForm.info.dateOfLastPayment = newYear ? `${newYear}-${newMonth.slice(-2)}-${newDate.slice(-2)}` : ''
 				}
 			},
 
@@ -761,15 +555,11 @@
 							worksheet.getCell(`B${row4}`).value = 'Date of Released:'
 							worksheet.getCell(`B${row4}`).font = { bold: true }
 
-							worksheet.getCell(`C${row4}`).value = moment(data.dateOfReleased).format(
-								'MMMM DD, YYYY'
-							)
+							worksheet.getCell(`C${row4}`).value = moment(data.dateOfReleased).format('MMMM DD, YYYY')
 
 							worksheet.getCell(`E${row4}`).value = 'Date of First Payment:'
 							worksheet.getCell(`E${row4}`).font = { bold: true }
-							worksheet.getCell(`G${row4}`).value = moment(data.dateOfFirstPayment).format(
-								'MMMM DD, YYYY'
-							)
+							worksheet.getCell(`G${row4}`).value = moment(data.dateOfFirstPayment).format('MMMM DD, YYYY')
 
 							worksheet.getCell(`E${row3}`).value = 'Loan Term:'
 							worksheet.getCell(`E${row3}`).font = { bold: true }
@@ -777,9 +567,7 @@
 
 							worksheet.getCell(`I${row4}`).value = 'Date of Last Payment:'
 							worksheet.getCell(`I${row4}`).font = { bold: true }
-							worksheet.getCell(`K${row4}`).value = moment(data.dateOfLastPayment).format(
-								'MMMM DD, YYYY'
-							)
+							worksheet.getCell(`K${row4}`).value = moment(data.dateOfLastPayment).format('MMMM DD, YYYY')
 
 							worksheet.getCell(`I${row3}`).value = 'Date:'
 							worksheet.getCell(`I${row3}`).font = { bold: true }
@@ -815,12 +603,9 @@
 							worksheet.getCell(`J${row5}`).value = 'Signature'
 
 							data.gp2Clients.forEach((client, index) => {
-								if (data.weeksToPay === 18) {
-									//18 weeks
-									colCum = (client.loanAmount * 124.2) / 100 - client.lr
-								} else if (data.weeksToPay === 24) {
-									//24 weeks
-									colCum = (client.loanAmount * 120) / 100 - client.lr
+								if (data.weeksToPay === 16) {
+									//16 weeks
+									colCum = client.loanAmount * 1.2 - client.lr
 								}
 
 								console.log(data.weeksToPay)
@@ -829,45 +614,21 @@
 									alignment: { horizontal: 'center' },
 								}
 								worksheet.getCell(`A${row6 + row6_spacing}`).value = index + 1 + '. '
-								worksheet.getCell(`B${row6 + row6_spacing}`).value = (
-									client.clientInfo.firstName +
-									' ' +
-									client.clientInfo.middleInitial +
-									' ' +
-									client.clientInfo.lastName
-								).toUpperCase()
+								worksheet.getCell(`B${row6 + row6_spacing}`).value = (client.clientInfo.firstName + ' ' + client.clientInfo.middleInitial + ' ' + client.clientInfo.lastName).toUpperCase()
 								worksheet.getCell(`C${row6 + row6_spacing}`).value = client.lr.toLocaleString()
-								worksheet.getCell(`D${row6 + row6_spacing}`).value = client.skCum
-									? client.skCum.toLocaleString()
-									: '-'
-								worksheet.getCell(`E${row6 + row6_spacing}`).value = client.pastDue
-									? client.pastDue.toLocaleString()
-									: '-'
-								worksheet.getCell(`G${row6 + row6_spacing}`).value = client.wi
-									? client.wi.toLocaleString()
-									: '-'
-								worksheet.getCell(`H${row6 + row6_spacing}`).value = colCum
-									? colCum.toLocaleString()
-									: '-'
-								worksheet.getCell(`I${row6 + row6_spacing}`).value = data.dateOfFirstPayment
-									? moment().diff(data.dateOfFirstPayment, 'weeks')
-									: '-'
+								worksheet.getCell(`D${row6 + row6_spacing}`).value = client.skCum ? client.skCum.toLocaleString() : '-'
+								worksheet.getCell(`E${row6 + row6_spacing}`).value = client.pastDue ? client.pastDue.toLocaleString() : '-'
+								worksheet.getCell(`G${row6 + row6_spacing}`).value = client.wi ? client.wi.toLocaleString() : '-'
+								worksheet.getCell(`H${row6 + row6_spacing}`).value = colCum ? colCum.toLocaleString() : '-'
+								worksheet.getCell(`I${row6 + row6_spacing}`).value = data.dateOfFirstPayment ? moment().diff(data.dateOfFirstPayment, 'weeks') : '-'
 
 								row6++
 							})
 
-							worksheet.getCell(`C${row8}`).value = data.totals.lr
-								? data.totals.lr.toLocaleString()
-								: '-'
-							worksheet.getCell(`D${row8}`).value = data.totals.skCum
-								? data.totals.skCum.toLocaleString()
-								: '-'
-							worksheet.getCell(`E${row8}`).value = data.totals.pastDue
-								? data.totals.pastDue.toLocaleString()
-								: '-'
-							worksheet.getCell(`G${row8}`).value = data.totals.wi
-								? data.totals.wi.toLocaleString()
-								: '-'
+							worksheet.getCell(`C${row8}`).value = data.totals.lr ? data.totals.lr.toLocaleString() : '-'
+							worksheet.getCell(`D${row8}`).value = data.totals.skCum ? data.totals.skCum.toLocaleString() : '-'
+							worksheet.getCell(`E${row8}`).value = data.totals.pastDue ? data.totals.pastDue.toLocaleString() : '-'
+							worksheet.getCell(`G${row8}`).value = data.totals.wi ? data.totals.wi.toLocaleString() : '-'
 
 							row3 += 7
 							row4 += 7

@@ -9,40 +9,17 @@
 						<v-form @submit.prevent="updateDetails" ref="formUpdateDetails">
 							<v-row>
 								<v-col cols="6">
-									<v-text-field
-										label="Payment Date Created"
-										:value="formatDate(detailsInfo.paymentDateCreated)"
-										class="text-right"
-										readonly
-									>
-									</v-text-field>
+									<v-text-field label="Payment Date Created" :value="formatDate(detailsInfo.paymentDateCreated)" class="text-right" readonly> </v-text-field>
 								</v-col>
-								<v-col cols="6">
-									<v-text-field
-										label="Payment Date Updated"
-										:value="formatDate(detailsInfo.paymentDateUpdated)"
-										readonly
-									>
-									</v-text-field
-								></v-col>
+								<v-col cols="6"> <v-text-field label="Payment Date Updated" :value="formatDate(detailsInfo.paymentDateUpdated)" readonly> </v-text-field></v-col>
 							</v-row>
 							<v-row>
 								<v-col cols="4">
-									<v-text-field
-										label="Actual Payment"
-										v-model.number.trim="detailsInfoPayload.payment"
-										:rules="[(v) => !!v || 'Payment is required!']"
-										readonly
-										type="number"
-									>
-									</v-text-field>
+									<v-text-field label="Actual Payment" v-model.number.trim="detailsInfoPayload.payment" :rules="[(v) => !!v || 'Payment is required!']" readonly type="number"> </v-text-field>
 								</v-col>
 								<v-col cols="4">
 									<v-text-field
-										:rules="[
-											(v) => !!v.toString() || 'Penalty is required!',
-											(v) => v >= 0 || 'Invalid Value!',
-										]"
+										:rules="[(v) => !!v.toString() || 'Penalty is required!', (v) => v >= 0 || 'Invalid Value!']"
 										label="Penalty"
 										v-model.number.trim="detailsInfoPayload.penalty"
 										type="number"
@@ -50,43 +27,21 @@
 									</v-text-field
 								></v-col>
 								<v-col cols="4">
-									<v-text-field
-										label="SK"
-										v-model.number.trim="detailsInfoPayload.sk"
-										:rules="[(v) => !!v || 'SK is required!', (v) => v >= 0 || 'Invalid Value!']"
-										type="number"
-									>
-									</v-text-field>
+									<v-text-field label="SK" v-model.number.trim="detailsInfoPayload.sk" :rules="[(v) => !!v || 'SK is required!', (v) => v >= 0 || 'Invalid Value!']" type="number"> </v-text-field>
 								</v-col>
 							</v-row>
 							<v-card-actions class="justify-end">
-								<v-btn
-									color="primary darken-1"
-									@click=";(dialog = !dialog), this.$refs.formUpdateDetails.resetValidation()"
-									text
-								>
+								<v-btn color="primary darken-1" @click=";(dialog = !dialog), this.$refs.formUpdateDetails.resetValidation()" text>
 									Close
 								</v-btn>
-								<v-btn
-									:loading="btnUpdate"
-									:disabled="btnUpdate"
-									color="primary darken-1"
-									type="submit"
-									text
-								>
+								<v-btn :loading="btnUpdate" :disabled="btnUpdate" color="primary darken-1" type="submit" text>
 									Update
 								</v-btn>
 							</v-card-actions>
 						</v-form>
 					</div>
 				</custom-dialog>
-				<v-data-table
-					:headers="headers"
-					:items="[...GP2_GETT_DATA_DETAILS]"
-					:items-per-page="5"
-					class="elevation-3"
-					:search="search"
-				>
+				<v-data-table :headers="headers" :items="[...GP2_GETT_DATA_DETAILS]" :items-per-page="5" class="elevation-3" :search="search">
 					<template v-slot:item="{ item, headers }">
 						<tr v-for="(detail, i) in item.details" :key="i">
 							<td>{{ formatDate(detail.createdAt) }}</td>
@@ -108,10 +63,7 @@
 							</td>
 						</tr>
 					</template>
-					<template
-						v-slot:[`body.append`]="{ items }"
-						v-if="GP2_GETT_DATA_DETAILS.details.length !== 0"
-					>
+					<template v-slot:[`body.append`]="{ items }" v-if="GP2_GETT_DATA_DETAILS.details.length !== 0">
 						<tr class="font-weight-bold" v-for="(item, i) in items" :key="i">
 							<td>Totals</td>
 							<td>₱ {{ item.totals.payment }}</td>

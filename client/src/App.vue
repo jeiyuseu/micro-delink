@@ -1,35 +1,19 @@
 <template>
 	<v-app id="app">
 		<v-app-bar elevation="1" color="white" app fixed>
-			<v-app-bar-nav-icon
-				v-if="AUTH_GETT_IS_AUTHENTICATED"
-				@click="drawer = !drawer"
-			></v-app-bar-nav-icon>
-
-			<v-toolbar-title class="  overline font-weight-black text-uppercase indigo--text"
-				>Goodlife Microlending Inc. Program 2</v-toolbar-title
-			>
+			<v-app-bar-nav-icon v-if="AUTH_GETT_IS_AUTHENTICATED" @click="drawer = !drawer"></v-app-bar-nav-icon>
+			<v-toolbar-title class="overline font-weight-black text-uppercase indigo--text">Micro-Delink</v-toolbar-title>
 			<v-spacer></v-spacer>
 		</v-app-bar>
 
-		<v-navigation-drawer
-			v-if="AUTH_GETT_IS_AUTHENTICATED"
-			v-model="drawer"
-			color="#000051"
-			app
-			flat
-			dark
-			width="200"
-		>
+		<v-navigation-drawer v-if="AUTH_GETT_IS_AUTHENTICATED" v-model="drawer" color="#000051" app flat dark width="200">
 			<template v-slot:prepend v-if="AUTH_GETT_IS_AUTHENTICATED">
 				<v-list-item class="blue darken-4" two-line>
 					<!-- <v-list-item-avatar>
-            <img src="https://randomuser.me/api/portraits/women/81.jpg" />
-          </v-list-item-avatar> -->
+						<img src="https://randomuser.me/api/portraits/women/81.jpg" />
+					</v-list-item-avatar> -->
 					<v-list-item-content>
-						<v-list-item-title class="font-weight-bold">{{
-							AUTH_GETT_USER.name.toUpperCase()
-						}}</v-list-item-title>
+						<v-list-item-title class="font-weight-bold">{{ AUTH_GETT_USER.name.toUpperCase() }}</v-list-item-title>
 						<v-list-item-subtitle>
 							<button @click="logOut" color="white" text>Log Out</button>
 						</v-list-item-subtitle>
@@ -41,19 +25,12 @@
 				<v-subheader>MAIN</v-subheader>
 				<v-divider class="mb-2"></v-divider>
 				<v-list-item-group v-model="setActiveLink">
-					<v-list-item
-						v-for="(menu, i) in menus"
-						:key="i"
-						@click="$router.push({ path: menu.link }).catch(() => {})"
-					>
+					<v-list-item v-for="(menu, i) in menus" :key="i" @click="$router.push({ path: menu.link }).catch(() => {})">
 						<v-list-item-icon>
 							<v-icon v-text="menu.icon"></v-icon>
 						</v-list-item-icon>
 						<v-list-item-content>
-							<v-list-item-title
-								class="font-weight-black overline"
-								v-text="menu.text.toUpperCase()"
-							></v-list-item-title>
+							<v-list-item-title class="font-weight-black overline" v-text="menu.text.toUpperCase()"></v-list-item-title>
 						</v-list-item-content>
 					</v-list-item>
 				</v-list-item-group>

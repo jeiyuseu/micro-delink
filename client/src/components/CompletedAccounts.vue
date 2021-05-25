@@ -7,14 +7,7 @@
 					<v-container>
 						<v-row>
 							<v-col cols="6">
-								<v-menu
-									ref="dateOfReleased"
-									:close-on-content-click="false"
-									transition="scale-transition"
-									offset-y
-									max-width="290px"
-									min-width="auto"
-								>
+								<v-menu ref="dateOfReleased" v-model="menuDateOfReleased" :close-on-content-click="false" transition="scale-transition" offset-y max-width="290px" min-width="auto">
 									<template v-slot:activator="{ on, attrs }">
 										<v-text-field
 											label="* Date of Released"
@@ -23,6 +16,7 @@
 											autocomplete="off"
 											v-bind="attrs"
 											v-on="on"
+											clearable
 											v-model.trim="reloanInfo.info.dateOfReleased"
 											:rules="[(v) => !!v || 'Date of releasaed is required!']"
 										></v-text-field>
@@ -31,14 +25,10 @@
 									<v-date-picker v-model.trim="reloanInfo.info.dateOfReleased" no-title scrollable>
 										<v-spacer></v-spacer>
 										<div class="justify-end">
-											<v-btn text color="primary" @click="menu = false">
+											<v-btn text color="primary" @click="menuDateOfReleased = false">
 												Cancel
 											</v-btn>
-											<v-btn
-												text
-												color="primary"
-												@click="$refs.dateOfReleased.save(reloanInfo.info.dateOfReleased)"
-											>
+											<v-btn text color="primary" @click="$refs.dateOfReleased.save(reloanInfo.info.dateOfReleased)">
 												OK
 											</v-btn>
 										</div>
@@ -47,10 +37,7 @@
 							</v-col>
 							<v-col cols="6">
 								<v-select
-									:items="[
-										{ desc: '18 Weeks', value: 18 },
-										{ desc: '24 Weeks', value: 24 },
-									]"
+									:items="[{ desc: '16 Weeks', value: 16 }]"
 									item-text="desc"
 									item-value="value"
 									prepend-inner-icon="mdi-view-week"
@@ -64,14 +51,7 @@
 
 						<v-row>
 							<v-col cols="6">
-								<v-menu
-									ref="dateOfFirstPayment"
-									:close-on-content-click="false"
-									transition="scale-transition"
-									offset-y
-									max-width="290px"
-									min-width="auto"
-								>
+								<v-menu ref="dateOfFirstPayment" v-model="menuFirstOfPayment" :close-on-content-click="false" transition="scale-transition" offset-y max-width="290px" min-width="auto">
 									<template v-slot:activator="{ on, attrs }">
 										<v-text-field
 											label="* Date of First Payment"
@@ -79,28 +59,20 @@
 											:rules="[(v) => !!v || 'Date of First Payment is required!']"
 											autocomplete="off"
 											v-bind="attrs"
+											clearable
 											prepend-inner-icon="mdi-calendar"
 											v-on="on"
 											v-model="reloanInfo.info.dateOfFirstPayment"
 										></v-text-field>
 									</template>
 
-									<v-date-picker
-										v-model="reloanInfo.info.dateOfFirstPayment"
-										@change="loanTerm"
-										no-title
-										scrollable
-									>
+									<v-date-picker v-model="reloanInfo.info.dateOfFirstPayment" @change="loanTerm" no-title scrollable>
 										<v-spacer></v-spacer>
 										<div class="justify-end">
-											<v-btn text color="primary" @click="menu = false">
+											<v-btn text color="primary" @click="menuFirstOfPayment = false">
 												Cancel
 											</v-btn>
-											<v-btn
-												text
-												color="primary"
-												@click="$refs.dateOfFirstPayment.save(reloanInfo.info.dateOfFirstPayment)"
-											>
+											<v-btn text color="primary" @click="$refs.dateOfFirstPayment.save(reloanInfo.info.dateOfFirstPayment)">
 												OK
 											</v-btn>
 										</div>
@@ -127,10 +99,7 @@
 									item-value="uuid"
 									prepend-inner-icon="mdi-account-plus"
 									:rules="[(v) => !!v || 'Client 1 is required!']"
-									:item-text="
-										(item) =>
-											(item.clientInfo.firstName + ' ' + item.clientInfo.lastName).toUpperCase()
-									"
+									:item-text="(item) => (item.clientInfo.firstName + ' ' + item.clientInfo.lastName).toUpperCase()"
 									v-model="reloanInfo.client.client1.clientId"
 								>
 								</v-autocomplete>
@@ -158,10 +127,7 @@
 									item-value="uuid"
 									:rules="[(v) => !!v || 'Client 2 is required!']"
 									prepend-inner-icon="mdi-account-plus"
-									:item-text="
-										(item) =>
-											(item.clientInfo.firstName + ' ' + item.clientInfo.lastName).toUpperCase()
-									"
+									:item-text="(item) => (item.clientInfo.firstName + ' ' + item.clientInfo.lastName).toUpperCase()"
 									v-model="reloanInfo.client.client2.clientId"
 								>
 								</v-autocomplete>
@@ -181,11 +147,7 @@
 						</v-row>
 					</v-container>
 					<v-card-actions class="justify-end">
-						<v-btn
-							color="primary darken-1"
-							@click=";(dialog = !dialog), $refs.formReloan.reset()"
-							text
-						>
+						<v-btn color="primary darken-1" @click=";(dialog = !dialog), $refs.formReloan.reset()" text>
 							Close
 						</v-btn>
 						<v-btn color="primary darken-1" :loading="btnReloan" type="submit" text>
@@ -201,23 +163,8 @@
 			</div>
 
 			<div slot="card-text">
-				<v-card-title>
-					<v-text-field
-						v-model="search"
-						append-icon="mdi-magnify"
-						label="Search gp2 code or client name..."
-						single-line
-						hide-details
-					></v-text-field
-				></v-card-title>
-				<v-data-table
-					:headers="headers"
-					:items="GP2_GETT_DATA_COMPLETED.gp2Info"
-					:expanded.sync="expanded"
-					:single-expand="true"
-					item-key="uuid"
-					class="elevation-2"
-				>
+				<v-card-title> <v-text-field v-model="search" append-icon="mdi-magnify" label="Search gp2 code or client name..." single-line hide-details></v-text-field></v-card-title>
+				<v-data-table :headers="headers" :items="GP2_GETT_DATA_COMPLETED.gp2Info" :expanded.sync="expanded" :single-expand="true" item-key="uuid" class="elevation-2">
 					<template v-slot:item="{ item, expand, isExpanded }">
 						<tr class="blue darken-4 white--text">
 							<td>{{ item.id }}</td>
@@ -227,9 +174,7 @@
 							<td>{{ moment(item.dateOfFirstPayment).format('MMMM DD, YYYY') }}</td>
 							<td>{{ moment(item.dateOfLastPayment).format('MMMM DD, YYYY') }}</td>
 							<td class="text-center">
-								<v-icon dark class="mr-4" @click="expand(!isExpanded), (show = !show)">
-									{{ isExpanded ? 'mdi-arrow-right' : 'mdi-arrow-down' }}</v-icon
-								>
+								<v-icon dark class="mr-4" @click="expand(!isExpanded), (show = !show)"> {{ isExpanded ? 'mdi-arrow-right' : 'mdi-arrow-down' }}</v-icon>
 
 								<v-icon dark @click=";(dialog = !dialog), reloanInfos(item)"> mdi-autorenew</v-icon>
 							</td>
@@ -249,33 +194,15 @@
 						<tr v-for="(client, i) in item.gp2Clients" :key="i">
 							<td>
 								{{ i + 1 }}.
-								{{
-									(
-										client.clientInfo.firstName +
-										' ' +
-										client.clientInfo.middleInitial +
-										' ' +
-										client.clientInfo.lastName
-									).toUpperCase()
-								}}
+								{{ (client.clientInfo.firstName + ' ' + client.clientInfo.middleInitial + ' ' + client.clientInfo.lastName).toUpperCase() }}
 							</td>
 							<td>₱ {{ client.lr.toLocaleString() }}</td>
 							<td>₱ {{ client.skCum.toLocaleString() }}</td>
 							<td>₱ {{ client.wi.toLocaleString() }}</td>
 							<td>₱ {{ client.pastDue.toLocaleString() }}</td>
 							<td>
-								{{
-									client.userInfo !== null
-										? (client.userInfo.firstName + ' ' + client.userInfo.lastName).toUpperCase()
-										: ''
-								}}
-								{{
-									client.userInfo !== null
-										? moment(client.updatedAt).fromNow()
-											? ' | ' + moment(client.updatedAt).fromNow()
-											: ''
-										: ''
-								}}
+								{{ client.userInfo !== null ? (client.userInfo.firstName + ' ' + client.userInfo.lastName).toUpperCase() : '' }}
+								{{ client.userInfo !== null ? (moment(client.updatedAt).fromNow() ? ' | ' + moment(client.updatedAt).fromNow() : '') : '' }}
 							</td>
 
 							<td class="text-center">
@@ -332,6 +259,8 @@
 				maxWidth: '700px',
 				search: '',
 				errors: [],
+				menuDateOfReleased: false,
+				menuFirstOfPayment: false,
 				btnReloan: false,
 				headers: [
 					{
@@ -425,25 +354,14 @@
 				}
 			},
 			loanTerm: function() {
-				if (this.reloanInfo.info.weeksToPay === 18) {
+				if (this.reloanInfo.info.weeksToPay === 16) {
 					const date = new Date(this.reloanInfo.info.dateOfFirstPayment)
-					date.setDate(date.getDate() + 126)
+					date.setDate(date.getDate() + 112)
 					const newMonth = '0' + (date.getMonth() + 1)
 					const newDate = '0' + date.getDate()
 					const newYear = date.getFullYear()
 
-					this.reloanInfo.info.dateOfLastPayment = newYear
-						? `${newYear}-${newMonth.slice(-2)}-${newDate.slice(-2)}`
-						: ''
-				} else if (this.reloanInfo.info.weeksToPay === 24) {
-					const date = new Date(this.reloanInfo.info.dateOfFirstPayment)
-					date.setDate(date.getDate() + 168)
-					const newMonth = '0' + (date.getMonth() + 1)
-					const newDate = '0' + date.getDate()
-					const newYear = date.getFullYear()
-					this.reloanInfo.info.dateOfLastPayment = newYear
-						? `${newYear}-${newMonth.slice(-2)}-${newDate.slice(-2)}`
-						: ''
+					this.reloanInfo.info.dateOfLastPayment = newYear ? `${newYear}-${newMonth.slice(-2)}-${newDate.slice(-2)}` : ''
 				}
 			},
 		},
