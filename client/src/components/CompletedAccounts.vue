@@ -164,7 +164,7 @@
 
 			<div slot="card-text">
 				<v-card-title> <v-text-field v-model="search" append-icon="mdi-magnify" label="Search gp2 code or client name..." single-line hide-details></v-text-field></v-card-title>
-				<v-data-table :headers="headers" :items="GP2_GETT_DATA_COMPLETED.gp2Info" :expanded.sync="expanded" :single-expand="true" item-key="uuid" class="elevation-2">
+				<v-data-table :headers="headers" :items="filteredData" :expanded.sync="expanded" :single-expand="true" item-key="uuid" class="elevation-2">
 					<template v-slot:item="{ item, expand, isExpanded }">
 						<tr class="blue darken-4 white--text">
 							<td>{{ item.id }}</td>
@@ -259,6 +259,7 @@
 				maxWidth: '700px',
 				search: '',
 				errors: [],
+				filteredData: [],
 				menuDateOfReleased: false,
 				menuFirstOfPayment: false,
 				btnReloan: false,
@@ -320,6 +321,9 @@
 				clientInfo: {},
 			}
 		},
+		created() {
+			this.filteredData = this.GP2_GETT_DATA_COMPLETED.gp2Info
+		},
 		components: {
 			Card,
 			CustomDialog,
@@ -329,6 +333,7 @@
 				GP2_RELOAN: 'gp2/GP2_RELOAN',
 				GP2_GET_DATA_COMPLETED: 'gp2/GP2_GET_DATA_COMPLETED',
 			}),
+
 			reloanInfos: function(item) {
 				this.info = item
 				this.reloanInfo.info.id = item.uuid
@@ -342,6 +347,7 @@
 					this.GP2_RELOAN({ codename: this.$route.params.codename, payload: this.reloanInfo })
 						.then(async ({ data }) => {
 							await this.GP2_GET_DATA_COMPLETED(this.$route.params.codename)
+							this.filteredData = this.GP2_GETT_DATA_COMPLETED.gp2Info
 							this.dialog = false
 							this.btnReloan = false
 							this.$toast.success(data.msg.toUpperCase())
@@ -360,7 +366,6 @@
 					const newMonth = '0' + (date.getMonth() + 1)
 					const newDate = '0' + date.getDate()
 					const newYear = date.getFullYear()
-
 					this.reloanInfo.info.dateOfLastPayment = newYear ? `${newYear}-${newMonth.slice(-2)}-${newDate.slice(-2)}` : ''
 				}
 			},
@@ -370,6 +375,11 @@
 				GP2_GETT_DATA_COMPLETED: 'gp2/GP2_GETT_DATA_COMPLETED',
 				AUTH_GETT_USER: 'auth/AUTH_GETT_USER',
 			}),
+		},
+		watch: {
+			search: function(v) {
+				this.filteredData = this.GP2_GETT_DATA_COMPLETED.gp2Info.filter((value) => value.id.includes(v.toUpperCase()))
+			},
 		},
 	}
 </script>

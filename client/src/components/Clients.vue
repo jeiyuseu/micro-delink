@@ -22,7 +22,7 @@
 											prepend-inner-icon="mdi-account"
 											maxlength="15"
 											autocomplete="off"
-											:rules="[(v) => !!v || 'Last name is required!', (v) => /^[a-z A-z.]+$/.test(v) || 'Letters only!']"
+											:rules="[(v) => !!v || 'Last name is required!', (v) => /^[a-z A-zÑñ.]+$/.test(v) || 'Letters only!']"
 										>
 										</v-text-field>
 									</v-col>
@@ -35,7 +35,7 @@
 											prepend-inner-icon="mdi-account"
 											autocomplete="off"
 											maxlength="15"
-											:rules="[(v) => !!v || 'First name is required!', (v) => /^[a-z A-z.]+$/.test(v) || 'Letters only!']"
+											:rules="[(v) => !!v || 'First name is required!', (v) => /^[a-z A-zÑñ.]+$/.test(v) || 'Letters only!']"
 										>
 										</v-text-field>
 									</v-col>
@@ -46,7 +46,7 @@
 											required
 											prepend-inner-icon="mdi-account"
 											autocomplete="off"
-											:rules="[(v) => (v.length > 0 ? /^[a-zA-Z]{1,2}(\.){1,1}$/.test(v) || 'At least one or two characters & must contain a one (.) at the end' : true)]"
+											:rules="[(v) => (v.length > 0 ? /^[a-zA-ZÑñ]{1,2}(\.){1,1}$/.test(v) || 'At least one or two characters & must contain a one (.) at the end' : true)]"
 										>
 										</v-text-field>
 									</v-col>
@@ -75,6 +75,7 @@
 											v-mask="'(####) ### ####'"
 											:rules="[(v) => (v.length > 0 ? v.length >= 15 || 'Invalid number!' : true)]"
 											type="tel"
+											placeholder="(09XX) XXX XXXX"
 											autocomplete="off"
 											v-model.number.trim="clientForm.contactNo"
 											required
@@ -131,7 +132,7 @@
 											prepend-inner-icon="mdi-account"
 											autocomplete="off"
 											maxlength="20"
-											:rules="[(v) => !!v || 'Last name is required!', (v) => /^[a-z A-z.]+$/.test(v) || 'Letters only!']"
+											:rules="[(v) => !!v || 'Last name is required!', (v) => /^[a-z A-zÑñ.]+$/.test(v) || 'Letters only!']"
 										>
 										</v-text-field>
 									</v-col>
@@ -143,7 +144,7 @@
 											prepend-inner-icon="mdi-account"
 											autocomplete="off"
 											maxlength="20"
-											:rules="[(v) => !!v || 'First name is required!', (v) => /^[a-z A-z.]+$/.test(v) || 'Letters only!']"
+											:rules="[(v) => !!v || 'First name is required!', (v) => /^[a-z A-zÑñ.]+$/.test(v) || 'Letters only!']"
 										>
 										</v-text-field>
 									</v-col>
@@ -153,7 +154,7 @@
 											v-model.trim="dialogInfoEdit.middleInitial"
 											prepend-inner-icon="mdi-account"
 											autocomplete="off"
-											:rules="[(v) => (v.length > 0 ? /^[a-zA-Z]{1,2}(\.){1,1}$/.test(v) || 'At least one or two characters & must contain a one (.) at the end' : true)]"
+											:rules="[(v) => (v.length > 0 ? /^[a-zA-ZÑñ]{1,2}(\.){1,1}$/.test(v) || 'At least one or two characters & must contain a one (.) at the end' : true)]"
 										>
 										</v-text-field>
 									</v-col>
@@ -180,6 +181,7 @@
 											label="Contact No."
 											v-mask="'(####) ### ####'"
 											autocomplete="off"
+											placeholder="(09XX) XXX XXXX"
 											:rules="[(v) => (v.length > 0 ? v.length >= 15 || 'Invalid number!' : true)]"
 											v-model.number.trim="dialogInfoEdit.contactNo"
 											required

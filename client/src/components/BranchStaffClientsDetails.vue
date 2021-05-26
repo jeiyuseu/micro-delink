@@ -41,9 +41,9 @@
 						</v-form>
 					</div>
 				</custom-dialog>
-				<v-data-table :headers="headers" :items="[...GP2_GETT_DATA_DETAILS]" :items-per-page="5" class="elevation-3" :search="search">
+				<v-data-table hide-default-footer :headers="headers" :items="[...GP2_GETT_DATA_DETAILS]" :items-per-page="5" class="elevation-3" :search="search">
 					<template v-slot:item="{ item, headers }">
-						<tr v-for="(detail, i) in item.details" :key="i">
+						<tr v-for="detail in item.details" :key="detail.uuid">
 							<td>{{ formatDate(detail.createdAt) }}</td>
 							<td>₱ {{ detail.payment.toLocaleString() }}</td>
 							<td>₱ {{ detail.penalty.toLocaleString() }}</td>
@@ -66,9 +66,9 @@
 					<template v-slot:[`body.append`]="{ items }" v-if="GP2_GETT_DATA_DETAILS.details.length !== 0">
 						<tr class="font-weight-bold" v-for="(item, i) in items" :key="i">
 							<td>Totals</td>
-							<td>₱ {{ item.totals.payment }}</td>
-							<td>₱ {{ item.totals.penalty }}</td>
-							<td>₱ {{ item.totals.sk }}</td>
+							<td>₱ {{ parseInt(item.totals.payment).toLocaleString() }}</td>
+							<td>₱ {{ parseInt(item.totals.penalty).toLocaleString() }}</td>
+							<td>₱ {{ parseInt(item.totals.sk).toLocaleString() }}</td>
 							<td></td>
 							<td></td>
 						</tr>
@@ -115,9 +115,7 @@
 				],
 			}
 		},
-		created() {
-			console.log(this.GP2_GETT_DATA_DETAILS)
-		},
+
 		methods: {
 			...mapActions({
 				GP2_GET_DATA_DETAILS: 'gp2/GP2_GET_DATA_DETAILS',

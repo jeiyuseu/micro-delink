@@ -19,7 +19,7 @@
 											name="firstName"
 											prepend-inner-icon="mdi-account"
 											required
-											:rules="[() => !!staffForm.firstName || 'First name is required!']"
+											:rules="[(v) => !!v || 'First name is required!']"
 										>
 										</v-text-field>
 									</v-col>
@@ -31,7 +31,7 @@
 											name="lastName"
 											prepend-inner-icon="mdi-account"
 											required
-											:rules="[() => !!staffForm.lastName || 'Last name is required!']"
+											:rules="[(v) => !!v || 'Last name is required!']"
 										>
 										</v-text-field>
 									</v-col>
@@ -43,18 +43,36 @@
 											name="codeName"
 											prepend-inner-icon="mdi-hard-hat"
 											required
-											:rules="[() => !!staffForm.codeName || 'Codename is required!']"
+											:rules="[(v) => !!v || 'Codename is required!']"
 										>
 										</v-text-field>
 									</v-col>
 								</v-row>
 								<v-row>
 									<v-col cols="4">
-										<v-text-field autocomplete="off" label="ID No." v-model.trim.number="staffForm.idNo" type="number" name="idNo" prepend-inner-icon="mdi-card-account-details" required>
+										<v-text-field
+											autocomplete="off"
+											label="ID No."
+											v-model.trim.number="staffForm.idNo"
+											type="number"
+											name="idNo"
+											prepend-inner-icon="mdi-card-account-details"
+											:rules="[(v) => v >= 0 || 'Invalid I.D No.']"
+										>
 										</v-text-field>
 									</v-col>
 									<v-col cols="4">
-										<v-text-field autocomplete="off" label="Contact No. " v-model.trim.number="staffForm.contactNo" name="contactNo" prepend-inner-icon="mdi-phone" required type="number">
+										<v-text-field
+											autocomplete="off"
+											label="Contact No. "
+											v-mask="'(####) ### ####'"
+											:rules="[(v) => (v.length > 0 ? v.length >= 15 || 'Invalid number!' : true)]"
+											type="tel"
+											placeholder="(09XX) XXX XXXX"
+											v-model.trim.number="staffForm.contactNo"
+											name="contactNo"
+											prepend-inner-icon="mdi-phone"
+										>
 										</v-text-field>
 									</v-col>
 									<v-col cols="4">
@@ -69,7 +87,7 @@
 											prepend-inner-icon="mdi-domain"
 											label="* Assigned Branch"
 											v-model="staffForm.uuidBranchId"
-											:rules="[() => !!staffForm.uuidBranchId || 'Branch is required!']"
+											:rules="[(v) => !!v || 'Branch is required!']"
 										>
 											<template v-slot:selection="{ item }">
 												{{ item.branchName.toUpperCase() }}
@@ -109,15 +127,11 @@
 					</v-card-text>
 				</v-card>
 				<v-card-title> <v-text-field v-model="search" append-icon="mdi-magnify" label="Search staff..." single-line hide-details></v-text-field></v-card-title>
-				<v-data-table :headers="headers" :items="STAFF_GETT_DATA" :items-per-page="5" class="elevation-1" :search="search">
-					<template slot="item" slot-scope="props">
+				<v-data-table :headers="headers" :items="STAFF_GETT_DATA" :items-per-page="5" class="elevation-1">
+					<template v-slot:item="{ item }">
 						<tr>
-							<td>{{ (props.item.firstName + ' ' + props.item.lastName).toUpperCase() }}</td>
-							<td>{{ props.item.branch.branchName.toUpperCase() }}</td>
-							<!-- <td>
-                <v-btn color="success darken-1">Edit</v-btn>
-                <v-btn color="error darken-1">Delete</v-btn>
-              </td> -->
+							<td>{{ (item.firstName + ' ' + item.lastName).toUpperCase() }}</td>
+							<td>{{ item.branch.branchName.toUpperCase() }}</td>
 						</tr>
 					</template>
 				</v-data-table>
@@ -196,7 +210,7 @@
 			}),
 		},
 		mounted() {
-			//check if branch state is set to avoid multiple request
+			//check if branch state is set
 			// if (this.data.length === 0) {
 			//   this.$Progress.start()
 			//   this.get()

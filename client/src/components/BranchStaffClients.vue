@@ -260,10 +260,10 @@
 						</v-row>
 					</v-card-text>
 				</v-card>
-				<v-card-title> <v-text-field v-model="search" append-icon="mdi-magnify" label="Search clients..." single-line hide-details></v-text-field></v-card-title>
-				<v-data-table :headers="headers" :items="GP2_GETT_DATA.gp2Info" :expanded.sync="expanded" :single-expand="false" item-key="uuid" class="elevation-2">
+				<v-card-title> <v-text-field v-model="search" append-icon="mdi-magnify" label="Search code #..." single-line hide-details></v-text-field></v-card-title>
+				<v-data-table :headers="headers" :items="filteredData" :expanded.sync="expanded" :single-expand="false" item-key="uuid" class="elevation-2">
 					<template v-slot:item="{ item, expand, isExpanded }">
-						<tr class="blue darken-4 white--text" v-if="item.gp2Clients.length">
+						<tr class="blue darken-4 white--text">
 							<td>{{ item.id }}</td>
 							<td>{{ moment().diff(item.dateOfFirstPayment, 'weeks') }}</td>
 							<td>{{ item.weeksToPay }} Weeks</td>
@@ -366,6 +366,7 @@
 				chkBoxInfoDesc: 'existing',
 				menuDateOfReleased: false,
 				menuFirstOfPayment: false,
+				filteredData: [],
 				dialogUpdateInfos: {
 					name: '',
 					lr: '',
@@ -450,7 +451,9 @@
 			Card,
 			CustomDialog,
 		},
-
+		created() {
+			this.filteredData = this.GP2_GETT_DATA.gp2Info
+		},
 		methods: {
 			...mapActions({
 				GP2_GET_DATA: 'gp2/GP2_GET_DATA',
@@ -466,10 +469,11 @@
 							this.$toast.success(data.msg.toUpperCase())
 							this.dialog = false
 							this.btnAddClient = false
-							this.$refs.formStaffClients.reset()
 							this.errors = []
 							await this.GP2_GET_DATA(this.$route.params.codename)
+							this.filteredData = this.GP2_GETT_DATA.gp2Info
 							await this.GP2_INFO_CODENAME(this.$route.params.codename)
+							this.$refs.formStaffClients.reset()
 						})
 						.catch((error) => {
 							this.btnAddClient = false
@@ -484,10 +488,11 @@
 					this.GP2_UPDATE_CLIENT(this.clientUpdateForm)
 						.then(async ({ data }) => {
 							this.$toast.success(data.msg.toUpperCase())
-							this.btnUpdateClient = false
 							this.dialogUpdate = false
+							this.btnUpdateClient = false
 							this.resetFields()
 							await this.GP2_GET_DATA(this.$route.params.codename)
+							this.filteredData = this.GP2_GETT_DATA.gp2Info
 						})
 						.catch((error) => {
 							console.log(error)
@@ -608,7 +613,6 @@
 									colCum = client.loanAmount * 1.2 - client.lr
 								}
 
-								console.log(data.weeksToPay)
 								worksheet.mergeCells(`J${row6 + row6_spacing}:L${row6 + row6_spacing}`)
 								worksheet.getRow(row6 + row6_spacing).style = {
 									alignment: { horizontal: 'center' },
@@ -708,6 +712,10 @@
 				} else if (val === 'new') {
 					this.$refs.infoDesc.reset()
 				}
+			},
+			search: function(v) {
+				const data = this.GP2_GETT_DATA.gp2Info.filter((value) => value.id.includes(v.toUpperCase()))
+				this.filteredData = data
 			},
 		},
 	}
