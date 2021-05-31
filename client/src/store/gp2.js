@@ -61,7 +61,6 @@ export default {
 			})
 		},
 		GP2_INSERT_CLIENT: ({ commit }, payload) => {
-			console.log(payload)
 			return new Promise((resolve, reject) => {
 				api
 					.post(`gp2/${payload.codename}`, { ...payload })

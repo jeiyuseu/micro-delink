@@ -78,7 +78,8 @@ module.exports = {
 
 		try {
 			const clients = await Clients.create(payload)
-			return res.status(201).send(clients)
+
+			return res.status(201).send({ status: 201, success: true, msg: clients })
 		} catch (error) {
 			return res.status(400).send({ error: error.message })
 		}

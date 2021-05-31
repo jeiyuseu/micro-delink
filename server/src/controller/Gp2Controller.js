@@ -187,7 +187,7 @@ module.exports = {
 			})
 			info.gp2InfoCodeId = gp2infocodeexists.id
 
-			const gp2InfoUuid = await Gp2Info.create({
+			const { uuid, dateOfFirstPayment, dateOfLastPayment, dateOfReleased, gp2InfoId, loanCycle, weeksToPay, id } = await Gp2Info.create({
 				...info,
 				gp2InfoId: gp2infocount + 1,
 				staffId: staff.id,
@@ -216,17 +216,62 @@ module.exports = {
 				client2.weeks = req.body.info.weeksToPay
 				client2.pastDue = 0
 
-				const gp2InfoId = await Gp2Info.findOne({
-					where: { uuid: gp2InfoUuid.uuid },
+				const gp2InfoIds = await Gp2Info.findOne({
+					where: { uuid },
 				})
 
-				client1.infoId = gp2InfoId.id
-				client2.infoId = gp2InfoId.id
+				client1.infoId = gp2InfoIds.id
+				client2.infoId = gp2InfoIds.id
 
-				const gp2Clients = await Gp2Clients.bulkCreate(Object.values({ client1, client2 }))
+				const gp2Clients = await Gp2Clients.bulkCreate(Object.values({ client1, client2 }), { include: ['userInfo'] })
+
+				let payload = {}
+				let client = []
+
+				gp2Clients.forEach((value, index, array) => {
+					client[index] = {
+						...array[index].toJSON(),
+						userInfo: null,
+						clientInfo: clientId.rows[index],
+					}
+				})
+
+				const filteredGp2Info = {
+					uuid,
+					gp2InfoId,
+					dateOfFirstPayment,
+					dateOfReleased,
+					dateOfLastPayment,
+					weeksToPay,
+					id: (staff.codeName + '-' + gp2infocodeexists.name + '-' + gp2InfoId).toUpperCase(),
+					loanCycle,
+					gp2InfoId,
+				}
+				for (const key in filteredGp2Info) {
+					payload = {
+						...filteredGp2Info,
+						gp2Clients: client,
+						totals: {
+							lr: gp2Clients.reduce((a, b) => {
+								return a + b.lr
+							}, 0),
+							skCum: gp2Clients.reduce((a, b) => {
+								return a + b.skCum
+							}, 0),
+							wi: gp2Clients.reduce((a, b) => {
+								return a + b.wi
+							}, 0),
+							pastDue: gp2Clients.reduce((a, b) => {
+								return a + b.pastDue
+							}, 0),
+						},
+					}
+				}
+
 				return res.status(201).send({
 					success: true,
-					msg: gp2infocodeexists.name + '-' + gp2InfoId.gp2InfoId + ' is added!',
+					status: 201,
+					msg: payload,
 				})
 			} else {
 				return res.status(400).send({
@@ -234,7 +279,7 @@ module.exports = {
 				})
 			}
 		} catch (error) {
-			return res.status(500).send({ error: [error.message] })
+			return res.status(500).send({ error: error.message })
 		}
 	},
 	update: async (req, res) => {
@@ -274,9 +319,13 @@ module.exports = {
 			const lr = gp2Clients.lr - installment
 			const skCum = gp2Clients.skCum + sk
 
-			await Gp2Clients.update({ lr, skCum, pastDue, updatedBy: authUser.id }, { where: { uuid: gp2Clients.uuid } })
-
-			return res.status(200).send({ success: true, msg: clients.firstName + ' ' + clients.lastName + ' is updated!' })
+			const [, info] = await Gp2Clients.update({ lr, skCum, pastDue, updatedBy: authUser.id }, { where: { uuid: gp2Clients.uuid }, include: ['userInfo'], returning: true, plain: true })
+			const rowGp2Clients = await Gp2Clients.findOne({
+				attributes: ['loanAmount', 'lr', 'pastDue', 'skCum', 'updatedAt', 'wi', 'uuid'],
+				where: { uuid: info.uuid },
+				include: [{ model: Users, as: 'userInfo', attributes: ['firstName', 'lastName'] }],
+			})
+			return res.status(200).send({ success: true, msg: clients.firstName + ' ' + clients.lastName + ' is updated!', res: rowGp2Clients })
 		} catch (error) {
 			return res.status(400).send({ success: false, msg: error.message })
 		}

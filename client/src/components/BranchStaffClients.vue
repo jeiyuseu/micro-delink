@@ -289,7 +289,7 @@
 						</tr>
 						<tr v-for="(client, i) in item.gp2Clients" :key="client.uuid">
 							<td colspan="2">
-								{{ i + 1 }}.
+								{{ parseInt(i) + 1 }}.
 								{{ (client.clientInfo.firstName + ' ' + client.clientInfo.middleInitial + ' ' + client.clientInfo.lastName).toUpperCase() }}
 							</td>
 							<td>₱ {{ client.lr.toLocaleString() }}</td>
@@ -452,7 +452,7 @@
 			CustomDialog,
 		},
 		created() {
-			this.filteredData = this.GP2_GETT_DATA.gp2Info
+			this.filteredData = this.GP2_GETT_DATA.gp2Info || []
 		},
 		methods: {
 			...mapActions({
@@ -466,14 +466,16 @@
 					this.btnAddClient = true
 					this.GP2_INSERT_CLIENT(this.staffClientForm)
 						.then(async ({ data }) => {
-							this.$toast.success(data.msg.toUpperCase())
+							// this.$toast.success(data.msg.toUpperCase())
 							this.dialog = false
 							this.btnAddClient = false
 							this.errors = []
-							await this.GP2_GET_DATA(this.$route.params.codename)
-							this.filteredData = this.GP2_GETT_DATA.gp2Info
-							await this.GP2_INFO_CODENAME(this.$route.params.codename)
+							// await this.GP2_GET_DATA(this.$route.params.codename)
+							this.filteredData.push(data.msg)
+							// await this.GP2_INFO_CODENAME(this.$route.params.codename)
+
 							this.$refs.formStaffClients.reset()
+							console.log(data)
 						})
 						.catch((error) => {
 							this.btnAddClient = false
@@ -491,8 +493,18 @@
 							this.dialogUpdate = false
 							this.btnUpdateClient = false
 							this.resetFields()
-							await this.GP2_GET_DATA(this.$route.params.codename)
-							this.filteredData = this.GP2_GETT_DATA.gp2Info
+							this.filteredData.forEach((value, index, array) => {
+								value.gp2Clients.find((client) => {
+									if (client.uuid === data.res.uuid) {
+										client.loanAmount = data.res.loanAmount
+										client.lr = data.res.lr
+										client.wi = data.res.wi
+										client.skCum = data.res.skCum
+										client.userInfo = data.res.userInfo
+										client.updatedAt = data.res.updatedAt
+									}
+								})
+							})
 						})
 						.catch((error) => {
 							console.log(error)

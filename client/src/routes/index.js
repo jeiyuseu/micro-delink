@@ -2,7 +2,6 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import store from '@/store'
 import NotFound from '@/components/404'
-import Branch from '@/components/Branch'
 
 Vue.use(VueRouter)
 

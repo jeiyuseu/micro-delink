@@ -230,14 +230,14 @@
 				<v-card-title> <v-text-field prepend-inner-icon="mdi-magnify" label="Search..." single-line hide-details v-model.trim="search"> </v-text-field></v-card-title>
 				<v-data-table
 					:headers="headers"
-					:items="CLIENT_GETT_DATA.clients"
+					:items="filteredData"
 					:items-per-page="10"
 					:footer-props="{
 						'items-per-page-options': [10, 20, 30],
 					}"
 					class="elevation-1"
 					item-key="id"
-					:server-items-length="CLIENT_GETT_DATA.totalItems"
+					:server-items-length="filteredTotalData"
 					:options.sync="setOptions"
 					:loading="loading"
 					loading-text="Loading... Please wait"
@@ -278,6 +278,8 @@
 		name: 'Clients',
 		data() {
 			return {
+				filteredData: [],
+				filteredTotalData: {},
 				dateMenu: false,
 				dialog: false,
 				dialogDelete: false,
@@ -336,6 +338,10 @@
 				],
 			}
 		},
+		created() {
+			this.filteredData = this.CLIENT_GETT_DATA.clients
+			this.filteredTotalData = this.CLIENT_GETT_DATA.totalItems
+		},
 		components: {
 			Card,
 			CustomDialog,
@@ -362,6 +368,10 @@
 				CLIENT_DELETE: 'clients/CLIENT_DELETE',
 				CLIENT_UPDATE: 'clients/CLIENT_UPDATE',
 			}),
+			reloadData: function() {
+				this.filteredData = this.CLIENT_GETT_DATA.clients
+				this.filteredTotalData = this.CLIENT_GETT_DATA.totalItems
+			},
 			formReset: function() {
 				for (const key in this.clientForm) {
 					this.clientForm[key] = ''
@@ -372,11 +382,13 @@
 				if (this.$refs.formClient.validate()) {
 					this.btnAddClient = true
 					this.CLIENT_INSERT_DATA(this.clientForm)
-						.then(async () => {
+						.then(async ({ data }) => {
+							console.log(data)
 							this.btnAddClient = false
 							this.dialog = false
-							await this.CLIENT_GET_DATA()
-							await this.CLIENT_GET_DATA_ALL()
+							console.log(this.setOptions)
+							// await this.CLIENT_GET_DATA()
+							// await this.CLIENT_GET_DATA_ALL()
 							this.$toast.success(`${this.clientForm.firstName} ${this.clientForm.middleInitial} ${this.clientForm.lastName} is added!`.toUpperCase())
 							this.formReset()
 						})
@@ -410,8 +422,8 @@
 							this.$toast.success(data.msg)
 							this.btnEditClient = false
 							this.dialogEdit = false
-							await this.CLIENT_GET_DATA()
-							await this.CLIENT_GET_DATA_ALL()
+							// await this.CLIENT_GET_DATA()
+							// await this.CLIENT_GET_DATA_ALL()
 						})
 						.catch((error) => {
 							this.btnEditClient = false
@@ -429,8 +441,8 @@
 						this.$toast.success(data.msg)
 						this.btnDeleteClient = false
 						this.dialogDelete = false
-						await this.CLIENT_GET_DATA()
-						await this.CLIENT_GET_DATA_ALL()
+						// await this.CLIENT_GET_DATA()
+						// await this.CLIENT_GET_DATA_ALL()
 					})
 					.catch((error) => {
 						this.btnDeleteClient = false
@@ -446,6 +458,7 @@
 				this.CLIENT_GET_DATA()
 					.then(() => {
 						this.loading = false
+						this.reloadData()
 					})
 					.catch((error) => {
 						console.log(error)
@@ -459,6 +472,7 @@
 				if (!this.waitSearch) {
 					setTimeout(async () => {
 						await this.CLIENT_GET_DATA()
+						this.reloadData()
 						this.waitSearch = false
 						this.loading = false
 					}, 2000)

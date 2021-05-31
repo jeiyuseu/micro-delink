@@ -20,6 +20,7 @@
     "jwt-decode": "^3.1.2",
     "lodash": "^4.17.20",
     "moment": "^2.29.1",
+    "nprogress": "^0.2.0",
     "typeface-roboto": "^1.1.13",
     "vue": "^2.6.11",
     "vue-disable-autocomplete": "0.0.4",

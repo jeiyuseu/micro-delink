@@ -29,9 +29,9 @@ module.exports = {
 	post: async (req, res) => {
 		try {
 			const branch = await Branch.create(req.body)
-			return res.status(201).send(branch)
+			return res.status(201).send({ sucess: true, status: 201, msg: branch })
 		} catch (error) {
-			return res.status(400).send({ error })
+			return res.status(400).send({ success: false, status: 400, error: error.message })
 		}
 	},
 

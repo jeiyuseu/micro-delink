@@ -100,7 +100,7 @@
 								</v-row>
 							</v-container>
 							<v-card-actions class="justify-end">
-								<v-btn color="primary darken-1" @click=";(dialog = !dialog), $refs.formStaff.reset()" text>
+								<v-btn color="primary darken-1" @click=";(dialog = !dialog), formReset" text>
 									Close
 								</v-btn>
 								<v-btn color="primary darken-1" :disabled="btnAddStaff" :loading="btnAddStaff" type="submit" text>
@@ -127,7 +127,7 @@
 					</v-card-text>
 				</v-card>
 				<v-card-title> <v-text-field v-model="search" append-icon="mdi-magnify" label="Search staff..." single-line hide-details></v-text-field></v-card-title>
-				<v-data-table :headers="headers" :items="STAFF_GETT_DATA" :items-per-page="5" class="elevation-1">
+				<v-data-table :headers="headers" :items="filteredData" :items-per-page="5" class="elevation-1">
 					<template v-slot:item="{ item }">
 						<tr>
 							<td>{{ (item.firstName + ' ' + item.lastName).toUpperCase() }}</td>
@@ -152,6 +152,7 @@
 				maxWidth: '700px',
 				search: '',
 				btnAddStaff: false,
+				filteredData: [],
 				headers: [
 					{
 						text: 'Staff Name',
@@ -179,21 +180,31 @@
 			Card,
 			CustomDialog,
 		},
+		created() {
+			this.filteredData = this.STAFF_GETT_DATA
+		},
 		methods: {
 			...mapActions({
 				STAFF_GET_DATA: 'staffs/STAFF_GET_DATA',
 				STAFF_INSERT_DATA: 'staffs/STAFF_INSERT_DATA',
 			}),
+			formReset: function() {
+				for (const key in this.staffForm) {
+					this.staffForm[key] = ''
+				}
+				this.$refs.formStaff.resetValidation()
+			},
 			addStaff() {
 				if (this.$refs.formStaff.validate()) {
 					this.btnAddStaff = true
 					this.STAFF_INSERT_DATA(this.staffForm)
-						.then(async (response) => {
-							await this.STAFF_GET_DATA()
-							this.$toast.success(`${this.staffForm.firstName} ${this.staffForm.lastName} is added!`.toUpperCase())
+						.then(async ({ data }) => {
+							console.log(data)
+							this.filteredData.push(data.msg)
+							this.$toast.success(`${data.msg.firstName} ${data.msg.lastName} is added!`.toUpperCase())
 							this.btnAddStaff = false
 							this.dialog = false
-							this.$refs.formStaff.reset()
+							this.formReset()
 						})
 						.catch((error) => {
 							this.btnAddStaff = false

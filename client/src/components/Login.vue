@@ -64,7 +64,7 @@
 		},
 
 		methods: {
-			...mapActions({ AUTH_LOG_IN: 'auth/AUTH_LOG_IN' }),
+			...mapActions({ AUTH_LOG_IN: 'auth/AUTH_LOG_IN', AUTH_REFRESH_TOKEN: 'auth/AUTH_REFRESH_TOKEN' }),
 			async login() {
 				if (this.$refs.formLogin.validate()) {
 					this.loading = true

@@ -55,7 +55,7 @@
 					</v-card-text>
 				</v-card>
 				<v-card-title> <v-text-field v-model="search" append-icon="mdi-magnify" label="Search branch..." single-line hide-details></v-text-field></v-card-title>
-				<v-data-table :headers="headers" :items="BRANCH_GETT_DATA" :items-per-page="5" class="elevation-1" :search="search">
+				<v-data-table :headers="headers" :items="filteredData" :items-per-page="5" class="elevation-1" :search="search">
 					<template v-slot:item="{ item }">
 						<tr>
 							<td>
@@ -91,6 +91,7 @@
 	export default {
 		data() {
 			return {
+				filteredData: [],
 				headers: [
 					{
 						text: 'Branch Name',
@@ -114,6 +115,9 @@
 				btnAddBranch: false,
 			}
 		},
+		created() {
+			this.filteredData = this.BRANCH_GETT_DATA
+		},
 		components: {
 			Card,
 			CustomDialog,
@@ -133,8 +137,8 @@
 				if (this.$refs.formBranch.validate()) {
 					this.btnAddBranch = true
 					this.BRANCH_INSERT_DATA(this.formBranch)
-						.then(async () => {
-							await this.BRANCH_GET_DATA()
+						.then(({ data }) => {
+							this.filteredData.push(data.msg)
 							this.$toast.success(`${this.formBranch.branchName} is added!`.toUpperCase())
 							this.btnAddBranch = false
 							this.dialog = false
