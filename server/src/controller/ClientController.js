@@ -30,7 +30,7 @@ module.exports = {
 
 			if (!isNaN(limit)) {
 				const clientsData = await Clients.findAll({
-					order: [['updatedAt', 'DESC']],
+					order: [['createdAt', 'ASC']],
 					where: {
 						[Op.or]: [
 							sequelize.where(sequelize.fn('concat', sequelize.col('firstName'), ' ', sequelize.col('lastName')), {
@@ -53,7 +53,7 @@ module.exports = {
 				return res.status(200).send(payload)
 			} else {
 				const clientsData = await Clients.findAll({
-					order: [['updatedAt', 'DESC']],
+					order: [['createdAt', 'ASC']],
 					where: {
 						[Op.or]: [
 							sequelize.where(sequelize.fn('concat', sequelize.col('firstName'), ' ', sequelize.col('lastName')), {
@@ -96,9 +96,9 @@ module.exports = {
 		}
 
 		try {
-			const client = await Clients.update({ ...payload }, { where: { uuid: id } })
+			const [,client] = await Clients.update({ ...payload }, { where: { uuid: id } , returning : true})
 
-			return res.status(200).send({ success: true, msg: 'Client updated!' })
+			return res.status(200).send({ status : 200 ,success: true, msg: client[0]})
 		} catch (error) {
 			return res.status(400).send({ success: false, error: error.message })
 		}
@@ -109,7 +109,7 @@ module.exports = {
 
 		try {
 			await Clients.destroy({ where: { uuid: id } })
-			return res.status(200).send({ success: true, msg: 'Client deleted!' })
+			return res.status(200).send({ status : 200,success: true, msg: 'Client deleted!' })
 		} catch (error) {
 			return res.status(400).send({ error: error.message })
 		}

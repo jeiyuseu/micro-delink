@@ -5,10 +5,10 @@
 			<div slot="card-button" class="float-right">
 				<custom-dialog :modal="dialog" :width="maxWidth">
 					<div slot="modal-title">
-						Add New Staff
+						{{ vFormStatus === 'onAdd' ? '	Add New Staff' : 'Edit Staff' }}
 					</div>
 					<div slot="modal-text">
-						<v-form @submit.prevent="addStaff" ref="formStaff">
+						<v-form @submit.prevent="vFormStatus === 'onAdd' ? addStaff() : editStaff()" ref="formStaff">
 							<v-container>
 								<v-row>
 									<v-col cols="4">
@@ -76,7 +76,17 @@
 										</v-text-field>
 									</v-col>
 									<v-col cols="4">
-										<v-textarea autocomplete="off" rows="1" auto-grow label="Address" prepend-inner-icon="mdi-map-marker" v-model.trim="staffForm.address" name="address" required> </v-textarea>
+										<v-textarea
+											autocomplete="off"
+											rows="1"
+											auto-grow
+											label="Address"
+											prepend-inner-icon="mdi-map-marker"
+											v-model.trim="staffForm.address"
+											name="address"
+											required
+										>
+										</v-textarea>
 									</v-col>
 								</v-row>
 								<v-row>
@@ -100,11 +110,11 @@
 								</v-row>
 							</v-container>
 							<v-card-actions class="justify-end">
-								<v-btn color="primary darken-1" @click=";(dialog = !dialog), formReset" text>
+								<v-btn color="primary darken-1" @click="toggleDialog" text>
 									Close
 								</v-btn>
-								<v-btn color="primary darken-1" :disabled="btnAddStaff" :loading="btnAddStaff" type="submit" text>
-									Add
+								<v-btn color="primary darken-1" :loading="btnToggle" type="submit" text>
+									{{ vFormStatus === 'onAdd' ? 'Add' : 'Edit' }}
 								</v-btn>
 							</v-card-actions>
 						</v-form>
@@ -116,7 +126,7 @@
 					<v-card-text>
 						<v-row>
 							<v-col cols="12">
-								<v-btn color="primary" outlined rounded dark @click.stop="dialog = true">
+								<v-btn color="primary" outlined rounded dark @click="toggleDialog(), (vFormStatus = 'onAdd')">
 									<v-icon dark left>
 										mdi-plus
 									</v-icon>
@@ -126,12 +136,22 @@
 						</v-row>
 					</v-card-text>
 				</v-card>
-				<v-card-title> <v-text-field v-model="search" append-icon="mdi-magnify" label="Search staff..." single-line hide-details></v-text-field></v-card-title>
+				<v-card-title>
+					<v-text-field v-model="search" append-icon="mdi-magnify" label="Search staff..." single-line hide-details></v-text-field
+				></v-card-title>
 				<v-data-table :headers="headers" :items="filteredData" :items-per-page="5" class="elevation-1">
 					<template v-slot:item="{ item }">
 						<tr>
 							<td>{{ (item.firstName + ' ' + item.lastName).toUpperCase() }}</td>
 							<td>{{ item.branch.branchName.toUpperCase() }}</td>
+							<td>
+								<v-btn :disabled="true" color="error" icon>
+									<v-icon>mdi-delete</v-icon>
+								</v-btn>
+								<v-btn color="warning" @click="editStaffInfo(item)" icon>
+									<v-icon>mdi-pencil</v-icon>
+								</v-btn>
+							</td>
 						</tr>
 					</template>
 				</v-data-table>
@@ -141,98 +161,130 @@
 </template>
 
 <script>
-	import CustomDialog from '@/components/Dialog'
-	import Card from '@/components/Card'
-	import { mapActions, mapGetters } from 'vuex'
+import CustomDialog from '@/components/Dialog'
+import Card from '@/components/Card'
+import { mapActions, mapGetters } from 'vuex'
 
-	export default {
-		data() {
-			return {
-				dialog: false,
-				maxWidth: '700px',
-				search: '',
-				btnAddStaff: false,
-				filteredData: [],
-				headers: [
-					{
-						text: 'Staff Name',
-						align: 'start',
-						sortable: false,
-					},
-					{
-						text: 'Branch Assigned',
-						align: 'start',
-						sortable: false,
-					},
-				],
-				staffForm: {
-					uuidBranchId: '',
-					firstName: '',
-					lastName: '',
-					codeName: '',
-					idNo: '',
-					contactNo: '',
-					address: '',
+export default {
+	data() {
+		return {
+			dialog: false,
+			maxWidth: '700px',
+			search: '',
+			btnToggle: false,
+			filteredData: [],
+			vFormStatus: 'onAdd',
+			headers: [
+				{
+					text: 'Staff Name',
+					align: 'start',
+					sortable: false,
 				},
+				{
+					text: 'Branch Assigned',
+					align: 'start',
+					sortable: false,
+				},
+			],
+			staffForm: {
+				uuidBranchId: '',
+				firstName: '',
+				lastName: '',
+				codeName: '',
+				idNo: '',
+				contactNo: '',
+				address: '',
+			},
+		}
+	},
+	components: {
+		Card,
+		CustomDialog,
+	},
+	created() {
+		this.filteredData = this.STAFF_GETT_DATA
+	},
+	methods: {
+		...mapActions({
+			STAFF_GET_DATA: 'staffs/STAFF_GET_DATA',
+			STAFF_INSERT_DATA: 'staffs/STAFF_INSERT_DATA',
+			STAFF_UPDATE_DATA: 'staffs/STAFF_UPDATE_DATA',
+		}),
+		toggleDialog() {
+			this.dialog = !this.dialog
+			this.formReset()
+		},
+		formReset: function() {
+			for (const key in this.staffForm) {
+				this.staffForm[key] = ''
+			}
+			this.$refs.formStaff.resetValidation()
+			delete this.staffForm.uuid
+		},
+		addStaff: function() {
+			if (this.$refs.formStaff.validate()) {
+				this.btnToggle = true
+				this.STAFF_INSERT_DATA(this.staffForm)
+					.then(({ data }) => {
+						this.filteredData.push(data.msg)
+						this.$toast.success(`${data.msg.firstName} ${data.msg.lastName} is added!`.toUpperCase())
+						this.btnToggle = false
+						this.dialog = false
+						this.formReset()
+					})
+					.catch((error) => {
+						this.btnToggle = false
+						this.$toast.error(error.response.data.error)
+						console.error(error)
+					})
 			}
 		},
-		components: {
-			Card,
-			CustomDialog,
+		editStaffInfo: function(data) {
+			this.dialog = true
+			this.vFormStatus = 'onUpdate'
+			for (const key in this.staffForm) {
+				this.staffForm[key] = data[key]
+			}
+			this.staffForm.uuidBranchId = data.branch.uuid
+			this.staffForm.uuid = data.uuid
 		},
-		created() {
-			this.filteredData = this.STAFF_GETT_DATA
+		editStaff: function() {
+			if (this.$refs.formStaff.validate()) {
+				this.STAFF_UPDATE_DATA(this.staffForm).then(({ data }) => {
+					this.filteredData.filter((value) => {
+						if (value.uuid === data.msg.uuid) {
+							for (const key in value) {
+								value[key] = data.msg[key]
+							}
+						}
+					})
+					this.$toast.success('Staff updated!')
+					this.dialog = false
+					this.btnToggle = false
+					this.formReset()
+				})
+			}
 		},
-		methods: {
-			...mapActions({
-				STAFF_GET_DATA: 'staffs/STAFF_GET_DATA',
-				STAFF_INSERT_DATA: 'staffs/STAFF_INSERT_DATA',
-			}),
-			formReset: function() {
-				for (const key in this.staffForm) {
-					this.staffForm[key] = ''
-				}
-				this.$refs.formStaff.resetValidation()
-			},
-			addStaff() {
-				if (this.$refs.formStaff.validate()) {
-					this.btnAddStaff = true
-					this.STAFF_INSERT_DATA(this.staffForm)
-						.then(async ({ data }) => {
-							console.log(data)
-							this.filteredData.push(data.msg)
-							this.$toast.success(`${data.msg.firstName} ${data.msg.lastName} is added!`.toUpperCase())
-							this.btnAddStaff = false
-							this.dialog = false
-							this.formReset()
-						})
-						.catch((error) => {
-							this.btnAddStaff = false
-							this.$toast.error(error.response.data.error)
-							console.error(error)
-						})
-				}
-			},
-		},
-		computed: {
-			...mapGetters({
-				STAFF_GETT_DATA: 'staffs/STAFF_GETT_DATA',
-				BRANCH_GETT_DATA: 'branch/BRANCH_GETT_DATA',
-			}),
-		},
-		mounted() {
-			//check if branch state is set
-			// if (this.data.length === 0) {
-			//   this.$Progress.start()
-			//   this.get()
-			//     .then(() => {
-			//       this.$Progress.finish()
-			//     })
-			//     .catch((error) => {
-			//       console.error(error.response.data.error.message)
-			//       this.$Progress.fail()
-			//     })
-			// }
-		},
-	}
+	},
+	computed: {
+		...mapGetters({
+			STAFF_GETT_DATA: 'staffs/STAFF_GETT_DATA',
+			BRANCH_GETT_DATA: 'branch/BRANCH_GETT_DATA',
+		}),
+	},
+	mounted() {
+		//check if branch state is set
+		// if (this.data.length === 0) {
+		//   this.$Progress.start()
+		//   this.get()
+		//     .then(() => {
+		//       this.$Progress.finish()
+		//     })
+		//     .catch((error) => {
+		//       console.error(error.response.data.error.message)
+		//       this.$Progress.fail()
+		//     })
+		// }
+	},
+}
 </script>

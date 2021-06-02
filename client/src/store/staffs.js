@@ -24,10 +24,22 @@ export default {
 					})
 			})
 		},
-		STAFF_INSERT_DATA: (_, credentials) => {
+		STAFF_INSERT_DATA: (_, payload) => {
 			return new Promise((resolve, reject) => {
 				api
-					.post('/staffs', credentials)
+					.post('/staffs', payload)
+					.then((response) => {
+						resolve(response)
+					})
+					.catch((error) => {
+						reject(error)
+					})
+			})
+		},
+		STAFF_UPDATE_DATA: (_, payload) => {
+			return new Promise((resolve, reject) => {
+				api
+					.patch('/staffs/'+payload.uuid,payload)
 					.then((response) => {
 						resolve(response)
 					})
