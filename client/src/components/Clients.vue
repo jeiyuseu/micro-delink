@@ -409,6 +409,11 @@ export default {
 							`${this.clientForm.firstName} ${this.clientForm.middleInitial} ${this.clientForm.lastName} is added!`.toUpperCase()
 						)
 						this.formReset()
+						/*TODO
+						
+						fix client length when 
+						
+						*/
 					})
 					.catch((error) => {
 						this.btnAddClient = false

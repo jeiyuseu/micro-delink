@@ -368,7 +368,11 @@ export default {
 		}),
 		clearInfo: function() {
 			for (const key in this.reloanInfo.info) {
-				this.reloanInfo.info[key] = ''
+				this.reloanInfo.info[key].clientId = ''
+				this.reloanInfo.info[key].loanAmount = ''
+			}
+			for (const key in this.reloanInfo.client) {
+				this.reloanInfo.client[key] = ''
 			}
 			this.$refs.formReloan.resetValidation()
 		},
