@@ -7,7 +7,15 @@
 					<v-container>
 						<v-row>
 							<v-col cols="6">
-								<v-menu ref="dateOfReleased" v-model="menuDateOfReleased" :close-on-content-click="false" transition="scale-transition" offset-y max-width="290px" min-width="auto">
+								<v-menu
+									ref="dateOfReleased"
+									v-model="menuDateOfReleased"
+									:close-on-content-click="false"
+									transition="scale-transition"
+									offset-y
+									max-width="290px"
+									min-width="auto"
+								>
 									<template v-slot:activator="{ on, attrs }">
 										<v-text-field
 											label="* Date of Released"
@@ -51,7 +59,15 @@
 
 						<v-row>
 							<v-col cols="6">
-								<v-menu ref="dateOfFirstPayment" v-model="menuFirstOfPayment" :close-on-content-click="false" transition="scale-transition" offset-y max-width="290px" min-width="auto">
+								<v-menu
+									ref="dateOfFirstPayment"
+									v-model="menuFirstOfPayment"
+									:close-on-content-click="false"
+									transition="scale-transition"
+									offset-y
+									max-width="290px"
+									min-width="auto"
+								>
 									<template v-slot:activator="{ on, attrs }">
 										<v-text-field
 											label="* Date of First Payment"
@@ -163,8 +179,23 @@
 			</div>
 
 			<div slot="card-text">
-				<v-card-title> <v-text-field v-model="search" append-icon="mdi-magnify" label="Search gp2 code or client name..." single-line hide-details></v-text-field></v-card-title>
-				<v-data-table :headers="headers" :items="filteredData" :expanded.sync="expanded" :single-expand="true" item-key="uuid" class="elevation-2">
+				<!-- <v-card-title>
+					<v-text-field
+						v-model="search"
+						append-icon="mdi-magnify"
+						label="Search gp2 code or client name..."
+						single-line
+						hide-details
+					></v-text-field
+				></v-card-title> -->
+				<v-data-table
+					:headers="headers"
+					:items="filteredData"
+					:expanded.sync="expanded"
+					:single-expand="true"
+					item-key="uuid"
+					class="elevation-2"
+				>
 					<template v-slot:item="{ item, expand, isExpanded }">
 						<tr class="blue darken-4 white--text">
 							<td>{{ item.id }}</td>
@@ -174,7 +205,9 @@
 							<td>{{ moment(item.dateOfFirstPayment).format('MMMM DD, YYYY') }}</td>
 							<td>{{ moment(item.dateOfLastPayment).format('MMMM DD, YYYY') }}</td>
 							<td class="text-center">
-								<v-icon dark class="mr-4" @click="expand(!isExpanded), (show = !show)"> {{ isExpanded ? 'mdi-arrow-right' : 'mdi-arrow-down' }}</v-icon>
+								<v-icon dark class="mr-4" @click="expand(!isExpanded), (show = !show)">
+									{{ isExpanded ? 'mdi-arrow-right' : 'mdi-arrow-down' }}</v-icon
+								>
 
 								<v-icon dark @click=";(dialog = !dialog), reloanInfos(item)"> mdi-autorenew</v-icon>
 							</td>
@@ -246,140 +279,145 @@
 </template>
 
 <script>
-	import Card from '@/components/Card'
-	import CustomDialog from '@/components/Dialog'
-	import { mapActions, mapGetters } from 'vuex'
+import Card from '@/components/Card'
+import CustomDialog from '@/components/Dialog'
+import { mapActions, mapGetters } from 'vuex'
 
-	export default {
-		data() {
-			return {
-				show: false,
-				expanded: [],
-				dialog: false,
-				maxWidth: '700px',
-				search: '',
-				errors: [],
-				filteredData: [],
-				menuDateOfReleased: false,
-				menuFirstOfPayment: false,
-				btnReloan: false,
-				headers: [
-					{
-						text: 'Code #',
-						align: 'start',
-						sortable: false,
-						value: 'codeName',
-					},
-					{
-						text: 'Week #',
-						align: 'start',
-						sortable: false,
-						value: 'dateOfFirstPayment',
-					},
-					{
-						text: 'Loan Term',
-						align: 'start',
-						sortable: false,
-						value: 'weeksToPay',
-					},
-					{
-						text: 'Date of Released',
-						align: 'start',
-						sortable: false,
-						value: 'dateOfReleased',
-					},
-					{
-						text: 'Date of First Payment',
-						align: 'start',
-						sortable: false,
-						value: 'dateOfFirstPayment',
-					},
-					{
-						text: 'Date of Last Payment',
-						align: 'start',
-						sortable: false,
-						value: 'dateOfLastPayment',
-					},
-					{
-						text: 'Action',
-						align: 'center',
-					},
-				],
-				reloanInfo: {
-					info: {
-						id: '',
-						dateOfReleased: '',
-						dateOfFirstPayment: '',
-						dateOfLastPayment: '',
-						weeksToPay: '',
-					},
-					client: {
-						client1: { clientId: '', loanAmount: '' },
-						client2: { clientId: '', loanAmount: '' },
-					},
+export default {
+	data() {
+		return {
+			show: false,
+			expanded: [],
+			dialog: false,
+			maxWidth: '700px',
+			search: '',
+			errors: [],
+			filteredData: [],
+			menuDateOfReleased: false,
+			menuFirstOfPayment: false,
+			btnReloan: false,
+			headers: [
+				{
+					text: 'Code #',
+					align: 'start',
+					sortable: false,
+					value: 'codeName',
 				},
-				clientInfo: {},
+				{
+					text: 'Week #',
+					align: 'start',
+					sortable: false,
+					value: 'dateOfFirstPayment',
+				},
+				{
+					text: 'Loan Term',
+					align: 'start',
+					sortable: false,
+					value: 'weeksToPay',
+				},
+				{
+					text: 'Date of Released',
+					align: 'start',
+					sortable: false,
+					value: 'dateOfReleased',
+				},
+				{
+					text: 'Date of First Payment',
+					align: 'start',
+					sortable: false,
+					value: 'dateOfFirstPayment',
+				},
+				{
+					text: 'Date of Last Payment',
+					align: 'start',
+					sortable: false,
+					value: 'dateOfLastPayment',
+				},
+				{
+					text: 'Action',
+					align: 'center',
+				},
+			],
+			reloanInfo: {
+				info: {
+					id: '',
+					dateOfReleased: '',
+					dateOfFirstPayment: '',
+					dateOfLastPayment: '',
+					weeksToPay: '',
+				},
+				client: {
+					client1: { clientId: '', loanAmount: '' },
+					client2: { clientId: '', loanAmount: '' },
+				},
+			},
+			clientInfo: {},
+		}
+	},
+	created() {
+		this.filteredData = this.GP2_GETT_DATA_COMPLETED.gp2Info
+	},
+	components: {
+		Card,
+		CustomDialog,
+	},
+	methods: {
+		...mapActions({
+			GP2_RELOAN: 'gp2/GP2_RELOAN',
+			GP2_GET_DATA_COMPLETED: 'gp2/GP2_GET_DATA_COMPLETED',
+		}),
+		clearInfo: function() {
+			for (const key in this.reloanInfo.info) {
+				this.reloanInfo.info[key] = ''
+			}
+			this.$refs.formReloan.resetValidation()
+		},
+		reloanInfos: function(item) {
+			this.info = item
+			this.reloanInfo.info.id = item.uuid
+			this.clientInfo = item.gp2Clients
+			this.reloanInfo.client.client1.clientId = item.gp2Clients[0].uuid
+			this.reloanInfo.client.client2.clientId = item.gp2Clients[1].uuid
+		},
+		reloan: function() {
+			if (this.$refs.formReloan.validate()) {
+				this.btnReloan = true
+				this.GP2_RELOAN({ codename: this.$route.params.codename, payload: this.reloanInfo })
+					.then(({ data }) => {
+						this.filteredData = this.filteredData.filter((value) => value.uuid !== data.resId)
+						this.dialog = false
+						this.btnReloan = false
+						this.$toast.success(data.msg.toUpperCase())
+						this.clearInfo()
+					})
+					.catch((error) => {
+						console.log(error)
+						this.btnReloan = false
+						this.$toast.error('Something went wrong...')
+					})
 			}
 		},
-		created() {
-			this.filteredData = this.GP2_GETT_DATA_COMPLETED.gp2Info
+		loanTerm: function() {
+			if (this.reloanInfo.info.weeksToPay === 16) {
+				const date = new Date(this.reloanInfo.info.dateOfFirstPayment)
+				date.setDate(date.getDate() + 112)
+				const newMonth = '0' + (date.getMonth() + 1)
+				const newDate = '0' + date.getDate()
+				const newYear = date.getFullYear()
+				this.reloanInfo.info.dateOfLastPayment = newYear ? `${newYear}-${newMonth.slice(-2)}-${newDate.slice(-2)}` : ''
+			}
 		},
-		components: {
-			Card,
-			CustomDialog,
+	},
+	computed: {
+		...mapGetters({
+			GP2_GETT_DATA_COMPLETED: 'gp2/GP2_GETT_DATA_COMPLETED',
+			AUTH_GETT_USER: 'auth/AUTH_GETT_USER',
+		}),
+	},
+	watch: {
+		search: function(v) {
+			this.filteredData = this.GP2_GETT_DATA_COMPLETED.gp2Info.filter((value) => value.id.includes(v.toUpperCase()))
 		},
-		methods: {
-			...mapActions({
-				GP2_RELOAN: 'gp2/GP2_RELOAN',
-				GP2_GET_DATA_COMPLETED: 'gp2/GP2_GET_DATA_COMPLETED',
-			}),
-
-			reloanInfos: function(item) {
-				this.info = item
-				this.reloanInfo.info.id = item.uuid
-				this.clientInfo = item.gp2Clients
-				this.reloanInfo.client.client1.clientId = item.gp2Clients[0].uuid
-				this.reloanInfo.client.client2.clientId = item.gp2Clients[1].uuid
-			},
-			reloan: function() {
-				if (this.$refs.formReloan.validate()) {
-					this.btnReloan = true
-					this.GP2_RELOAN({ codename: this.$route.params.codename, payload: this.reloanInfo })
-						.then(async ({ data }) => {
-							await this.GP2_GET_DATA_COMPLETED(this.$route.params.codename)
-							this.filteredData = this.GP2_GETT_DATA_COMPLETED.gp2Info
-							this.dialog = false
-							this.btnReloan = false
-							this.$toast.success(data.msg.toUpperCase())
-						})
-						.catch((error) => {
-							console.log(error)
-							this.btnReloan = false
-							this.$toast.error('Something went wrong...')
-						})
-				}
-			},
-			loanTerm: function() {
-				if (this.reloanInfo.info.weeksToPay === 16) {
-					const date = new Date(this.reloanInfo.info.dateOfFirstPayment)
-					date.setDate(date.getDate() + 112)
-					const newMonth = '0' + (date.getMonth() + 1)
-					const newDate = '0' + date.getDate()
-					const newYear = date.getFullYear()
-					this.reloanInfo.info.dateOfLastPayment = newYear ? `${newYear}-${newMonth.slice(-2)}-${newDate.slice(-2)}` : ''
-				}
-			},
-		},
-		computed: {
-			...mapGetters({
-				GP2_GETT_DATA_COMPLETED: 'gp2/GP2_GETT_DATA_COMPLETED',
-				AUTH_GETT_USER: 'auth/AUTH_GETT_USER',
-			}),
-		},
-		watch: {
-			search: function(v) {
-				this.filteredData = this.GP2_GETT_DATA_COMPLETED.gp2Info.filter((value) => value.id.includes(v.toUpperCase()))
-			},
-		},
-	}
+	},
+}
 </script>

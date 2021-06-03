@@ -54,7 +54,9 @@
 						</v-row>
 					</v-card-text>
 				</v-card>
-				<v-card-title> <v-text-field v-model="search" append-icon="mdi-magnify" label="Search branch..." single-line hide-details></v-text-field></v-card-title>
+				<v-card-title>
+					<v-text-field v-model="search" append-icon="mdi-magnify" label="Search branch..." single-line hide-details></v-text-field
+				></v-card-title>
 				<v-data-table :headers="headers" :items="filteredData" :items-per-page="5" class="elevation-1" :search="search">
 					<template v-slot:item="{ item }">
 						<tr>
@@ -85,92 +87,92 @@
 </template>
 
 <script>
-	import CustomDialog from '@/components/Dialog'
-	import Card from '@/components/Card'
-	import { mapActions, mapGetters } from 'vuex'
-	export default {
-		data() {
-			return {
-				filteredData: [],
-				headers: [
-					{
-						text: 'Branch Name',
-						align: 'start',
-						sortable: false,
-						value: 'branchName',
-					},
-					{
-						text: 'Action',
-						align: 'center',
-						sortable: false,
-						value: false,
-					},
-				],
-				formBranch: {
-					branchName: '',
+import CustomDialog from '@/components/Dialog'
+import Card from '@/components/Card'
+import { mapActions, mapGetters } from 'vuex'
+export default {
+	data() {
+		return {
+			filteredData: [],
+			headers: [
+				{
+					text: 'Branch Name',
+					align: 'start',
+					sortable: false,
+					value: 'branchName',
 				},
-				search: '',
-				dialog: false,
-				maxWidth: '600px',
-				btnAddBranch: false,
+				{
+					text: 'Action',
+					align: 'center',
+					sortable: false,
+					value: false,
+				},
+			],
+			formBranch: {
+				branchName: '',
+			},
+			search: '',
+			dialog: false,
+			maxWidth: '600px',
+			btnAddBranch: false,
+		}
+	},
+	created() {
+		this.filteredData = this.BRANCH_GETT_DATA
+	},
+	components: {
+		Card,
+		CustomDialog,
+	},
+	computed: {
+		...mapGetters({
+			BRANCH_GETT_DATA: 'branch/BRANCH_GETT_DATA',
+			BRANCH_GETT_SLUG: 'branch/BRANCH_GETT_SLUG',
+		}),
+	},
+	methods: {
+		...mapActions({
+			BRANCH_GET_DATA: 'branch/BRANCH_GET_DATA',
+			BRANCH_INSERT_DATA: 'branch/BRANCH_INSERT_DATA',
+		}),
+		addBranch() {
+			if (this.$refs.formBranch.validate()) {
+				this.btnAddBranch = true
+				this.BRANCH_INSERT_DATA(this.formBranch)
+					.then(({ data }) => {
+						this.filteredData.push(data.msg)
+						this.$toast.success(`${this.formBranch.branchName} is added!`.toUpperCase())
+						this.btnAddBranch = false
+						this.dialog = false
+						this.$refs.formBranch.reset()
+					})
+					.catch((error) => {
+						this.btnAddBranch = false
+						console.log(error)
+						this.$toast.error(`${this.formBranch.branchName} is exist!`)
+					})
 			}
 		},
-		created() {
-			this.filteredData = this.BRANCH_GETT_DATA
-		},
-		components: {
-			Card,
-			CustomDialog,
-		},
-		computed: {
-			...mapGetters({
-				BRANCH_GETT_DATA: 'branch/BRANCH_GETT_DATA',
-				BRANCH_GETT_SLUG: 'branch/BRANCH_GETT_SLUG',
-			}),
-		},
-		methods: {
-			...mapActions({
-				BRANCH_GET_DATA: 'branch/BRANCH_GET_DATA',
-				BRANCH_INSERT_DATA: 'branch/BRANCH_INSERT_DATA',
-			}),
-			addBranch() {
-				if (this.$refs.formBranch.validate()) {
-					this.btnAddBranch = true
-					this.BRANCH_INSERT_DATA(this.formBranch)
-						.then(({ data }) => {
-							this.filteredData.push(data.msg)
-							this.$toast.success(`${this.formBranch.branchName} is added!`.toUpperCase())
-							this.btnAddBranch = false
-							this.dialog = false
-							this.$refs.formBranch.reset()
-						})
-						.catch((error) => {
-							this.btnAddBranch = false
-							console.log(error)
-							this.$toast.error(`${this.formBranch.branchName} is exist!`)
-						})
-				}
-			},
-		},
-		mounted() {
-			//check if branch state is set to avoid multiple request
-			// if (this.data.length === 0) {
-			//   this.$Progress.start()
-			//   this.get()
-			//     .then(() => {
-			//       this.$Progress.finish()
-			//     })
-			//     .catch((error) => {
-			//       console.error(error.response.data.error.message)
-			//       this.$Progress.fail()
-			//     })
-			// }
-		},
-	}
+	},
+	mounted() {
+		//check if branch state is set to avoid multiple request
+		// if (this.data.length === 0) {
+		//   this.$Progress.start()
+		//   this.get()
+		//     .then(() => {
+		//       this.$Progress.finish()
+		//     })
+		//     .catch((error) => {
+		//       console.error(error.response.data.error.message)
+		//       this.$Progress.fail()
+		//     })
+		// }
+	},
+}
 </script>
 
 <style scoped>
-	.branch-name input {
-		text-transform: uppercase;
-	}
+.branch-name input {
+	text-transform: uppercase;
+}
 </style>

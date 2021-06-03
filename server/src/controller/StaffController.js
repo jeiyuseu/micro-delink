@@ -16,7 +16,7 @@ module.exports = {
 			const branch = await Branch.findOne({ where: { uuid: req.body.uuidBranchId } })
 			//eager loading for create then return data, still has issues
 			const staffId = await Staffs.create({ ...req.body, branchId: branch.id }, { include: { model: Branch, as: 'branch' } })
-			const staff = await Staffs.findOne({ attributes: ['firstName', 'lastName'], where: { uuid: staffId.uuid }, include: { model: Branch, as: 'branch', attributes: ['branchName'] } })
+			const staff = await Staffs.findOne({ where: { uuid: staffId.uuid }, include: { model: Branch, as: 'branch', } })
 			return res.status(201).send({ success: true, status: 201, msg: staff })
 		} catch (error) {
 			return res.status(400).send({ error: error.message })

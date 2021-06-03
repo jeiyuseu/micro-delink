@@ -144,7 +144,7 @@
 						<tr>
 							<td>{{ (item.firstName + ' ' + item.lastName).toUpperCase() }}</td>
 							<td>{{ item.branch.branchName.toUpperCase() }}</td>
-							<td>
+							<td class="text-center">
 								<v-btn :disabled="true" color="error" icon>
 									<v-icon>mdi-delete</v-icon>
 								</v-btn>
@@ -183,6 +183,11 @@ export default {
 				{
 					text: 'Branch Assigned',
 					align: 'start',
+					sortable: false,
+				},
+				{
+					text: 'Action',
+					align: 'center',
 					sortable: false,
 				},
 			],

@@ -20,7 +20,7 @@ module.exports = {
 							['gp2InfoCodeId', 'ASC'],
 						],
 						separate: true,
-						attributes: ['id', 'uuid', 'weeksToPay', 'loanCycle', 'dateOfFirstPayment', 'dateOfReleased', 'dateOfLastPayment', 'gp2InfoId'],
+						attributes: ['id', 'uuid', 'weeksToPay', 'loanCycle', 'dateOfFirstPayment', 'dateOfReleased', 'dateOfLastPayment'],
 						where: sequelize.where(sequelize.col('gp2Clients.lr'), filter, 0),
 						include: [
 							{
@@ -172,24 +172,15 @@ module.exports = {
 			if (isClientExists.count > 0) {
 				return res.status(400).send({ error: errors })
 			}
-
-			let infodesc
-			if (info.newInfoDesc) {
-				const infocode = await Gp2InfoCode.create({ name: info.newInfoDesc })
-
-				infodesc = infocode.uuid
-			} else {
-				infodesc = info.infoDesc
-			}
-			const gp2infocodeexists = await Gp2InfoCode.findOne({ where: { uuid: infodesc } })
+			const infocode = await Gp2InfoCode.create({ name: info.infoDesc })
+			const gp2infocodeexists = await Gp2InfoCode.findOne({ where: { uuid: infocode.uuid } })
 			const gp2infocount = await Gp2Info.count({
 				where: { staffId: staff.id, gp2InfoCodeId: gp2infocodeexists.id },
 			})
 			info.gp2InfoCodeId = gp2infocodeexists.id
 
-			const { uuid, dateOfFirstPayment, dateOfLastPayment, dateOfReleased, gp2InfoId, loanCycle, weeksToPay, id } = await Gp2Info.create({
-				...info,
-				gp2InfoId: gp2infocount + 1,
+			const { uuid, dateOfFirstPayment, dateOfLastPayment, dateOfReleased, loanCycle, weeksToPay } = await Gp2Info.create({
+				...info,	
 				staffId: staff.id,
 				branchId: branch.id,
 			})
@@ -238,14 +229,13 @@ module.exports = {
 
 				const filteredGp2Info = {
 					uuid,
-					gp2InfoId,
 					dateOfFirstPayment,
 					dateOfReleased,
 					dateOfLastPayment,
 					weeksToPay,
-					id: (staff.codeName + '-' + gp2infocodeexists.name + '-' + gp2InfoId).toUpperCase(),
+					id: (staff.codeName + '-' + gp2infocodeexists.name).toUpperCase(),
 					loanCycle,
-					gp2InfoId,
+					
 				}
 				for (const key in filteredGp2Info) {
 					payload = {
@@ -279,7 +269,7 @@ module.exports = {
 				})
 			}
 		} catch (error) {
-			return res.status(500).send({ error: error.message })
+			return res.status(500).send({ error: [error.message] })
 		}
 	},
 	update: async (req, res) => {
@@ -319,13 +309,50 @@ module.exports = {
 			const lr = gp2Clients.lr - installment
 			const skCum = gp2Clients.skCum + sk
 
-			const [, info] = await Gp2Clients.update({ lr, skCum, pastDue, updatedBy: authUser.id }, { where: { uuid: gp2Clients.uuid }, include: ['userInfo'], returning: true, plain: true })
-			const rowGp2Clients = await Gp2Clients.findOne({
-				attributes: ['loanAmount', 'lr', 'pastDue', 'skCum', 'updatedAt', 'wi', 'uuid'],
-				where: { uuid: info.uuid },
-				include: [{ model: Users, as: 'userInfo', attributes: ['firstName', 'lastName'] }],
+			await Gp2Clients.update({ lr, skCum, pastDue, updatedBy: authUser.id }, { where: { uuid: gp2Clients.uuid }})
+
+			const rowGp2Clients = await Gp2Info.findOne({
+			
+				where: { uuid: gp2InfoUuid },
+				include: [{ model: Gp2Clients, as: 'gp2Clients', include:[{
+					model: Clients,
+					as: 'clientInfo',
+					order: [['firstName', 'ASC']],
+					attributes: ['uuid', 'firstName', 'middleInitial', 'lastName', 'slug'],
+				},{
+					model: Users,
+					as: 'userInfo',
+					attributes: ['firstName', 'lastName'],
+				},] }],
 			})
-			return res.status(200).send({ success: true, msg: clients.firstName + ' ' + clients.lastName + ' is updated!', res: rowGp2Clients })
+		
+			const payloads = {}
+			const gp2InfoPayload = []
+			let totals = {}
+			rowGp2Clients.gp2Clients.forEach((element1, i1, array) => {
+				gp2InfoPayload[i1] = {
+					...array[i1].toJSON(),
+				}
+				totals = {
+					lr: array.reduce((a, b) => {
+						return a + b.lr
+					}, 0),
+					skCum: array.reduce((a, b) => {
+						return a + b.skCum
+					}, 0),
+					wi: array.reduce((a, b) => {
+						return a + b.wi
+					}, 0),
+					pastDue: array.reduce((a, b) => {
+						return a + b.pastDue
+					}, 0),
+				}
+				
+			})
+			payloads.gp2Clients = gp2InfoPayload
+			payloads.totals = totals
+			payloads.uuid = gp2InfoUuid
+			return res.status(200).send({ success: true, msg: clients.firstName + ' ' + clients.lastName + ' is updated!', res: payloads })
 		} catch (error) {
 			return res.status(400).send({ success: false, msg: error.message })
 		}
@@ -438,8 +465,10 @@ module.exports = {
 				updateOnDuplicate: ['lr', 'wi', 'weeks', 'pastDue', 'loanAmount'],
 			})
 			return res.status(201).send({
+				status:201,
 				success: true,
 				msg: `${gp2info.staffs.codeName}-${gp2info.codename.name}-${gp2info.id} is successfully reloaned!`,
+				resId:info.id
 			})
 		} catch (error) {
 			return res.status(400).send({ success: false, msg: error.message })

@@ -19,10 +19,7 @@ module.exports = (sequelize, DataTypes) => {
 				id: (
 					this.get().staffs.codeName +
 					'-' +
-					this.get().codename.name +
-					'-' +
-					this.get().gp2InfoId
-				).toUpperCase(),
+					this.get().codename.name).toUpperCase(),
 				staffId: undefined,
 				branchId: undefined,
 			}
@@ -34,10 +31,7 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.UUID,
 				defaultValue: DataTypes.UUIDV4,
 			},
-			gp2InfoId: {
-				type: DataTypes.INTEGER,
-				allowNull: false,
-			},
+		
 			staffId: {
 				type: DataTypes.INTEGER,
 				allowNull: false,

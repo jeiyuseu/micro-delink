@@ -12,10 +12,7 @@ module.exports = {
 				type: DataTypes.UUID,
 				allowNull: false,
 			},
-			gp2InfoId: {
-				type: DataTypes.INTEGER,
-				allowNull: false,
-			},
+		
 			gp2InfoCodeId: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
