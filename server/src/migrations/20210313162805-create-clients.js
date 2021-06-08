@@ -46,6 +46,7 @@ module.exports = {
 			},
 			slug: {
 				type: DataTypes.STRING,
+				unique:true
 			},
 		})
 	},

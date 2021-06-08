@@ -1,6 +1,6 @@
 ;('use strict')
 const { Model } = require('sequelize')
-module.exports = (sequelize, DataTypes, SequelizeSlugify) => {
+module.exports = (sequelize, DataTypes, Slugify) => {
 	class branch extends Model {
 		/**
 		 * Helper method for defining associations.
@@ -42,14 +42,13 @@ module.exports = (sequelize, DataTypes, SequelizeSlugify) => {
 			hooks: {
 				beforeCreate: function (branch) {
 					branch.branchName = branch.branchName.toLowerCase()
+					branch.slug = Slugify(`${branch.branchName.toLowerCase()}`)
+					return branch
 				},
 			},
 		}
 	)
 
-	SequelizeSlugify.slugifyModel(branch, {
-		source: ['branchName'],
-	})
 
 	return branch
 }

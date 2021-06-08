@@ -280,7 +280,7 @@
 
 <script>
 import Card from '@/components/Card'
-import CustomDialog from '@/components/Dialog'
+import CustomDialog from '@/components/Dialogs/Dialog'
 import { mapActions, mapGetters } from 'vuex'
 
 export default {

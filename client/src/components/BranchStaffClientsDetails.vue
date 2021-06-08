@@ -9,13 +9,28 @@
 						<v-form @submit.prevent="updateDetails" ref="formUpdateDetails">
 							<v-row>
 								<v-col cols="6">
-									<v-text-field label="Payment Date Created" :value="formatDate(detailsInfo.paymentDateCreated)" class="text-right" readonly> </v-text-field>
+									<v-text-field
+										label="Payment Date Created"
+										:value="formatDate(detailsInfo.paymentDateCreated)"
+										class="text-right"
+										readonly
+									>
+									</v-text-field>
 								</v-col>
-								<v-col cols="6"> <v-text-field label="Payment Date Updated" :value="formatDate(detailsInfo.paymentDateUpdated)" readonly> </v-text-field></v-col>
+								<v-col cols="6">
+									<v-text-field label="Payment Date Updated" :value="formatDate(detailsInfo.paymentDateUpdated)" readonly> </v-text-field
+								></v-col>
 							</v-row>
 							<v-row>
 								<v-col cols="4">
-									<v-text-field label="Actual Payment" v-model.number.trim="detailsInfoPayload.payment" :rules="[(v) => !!v || 'Payment is required!']" readonly type="number"> </v-text-field>
+									<v-text-field
+										label="Actual Payment"
+										v-model.number.trim="detailsInfoPayload.payment"
+										:rules="[(v) => !!v || 'Payment is required!']"
+										readonly
+										type="number"
+									>
+									</v-text-field>
 								</v-col>
 								<v-col cols="4">
 									<v-text-field
@@ -27,7 +42,13 @@
 									</v-text-field
 								></v-col>
 								<v-col cols="4">
-									<v-text-field label="SK" v-model.number.trim="detailsInfoPayload.sk" :rules="[(v) => !!v || 'SK is required!', (v) => v >= 0 || 'Invalid Value!']" type="number"> </v-text-field>
+									<v-text-field
+										label="SK"
+										v-model.number.trim="detailsInfoPayload.sk"
+										:rules="[(v) => !!v || 'SK is required!', (v) => v >= 0 || 'Invalid Value!']"
+										type="number"
+									>
+									</v-text-field>
 								</v-col>
 							</v-row>
 							<v-card-actions class="justify-end">
@@ -41,7 +62,14 @@
 						</v-form>
 					</div>
 				</custom-dialog>
-				<v-data-table hide-default-footer :headers="headers" :items="[...GP2_GETT_DATA_DETAILS]" :items-per-page="5" class="elevation-3" :search="search">
+				<v-data-table
+					hide-default-footer
+					:headers="headers"
+					:items="[...GP2_GETT_DATA_DETAILS]"
+					:items-per-page="5"
+					class="elevation-3"
+					:search="search"
+				>
 					<template v-slot:item="{ item, headers }">
 						<tr v-for="detail in item.details" :key="detail.uuid">
 							<td>{{ formatDate(detail.createdAt) }}</td>
@@ -80,85 +108,85 @@
 </template>
 
 <script>
-	import Card from '@/components/Card'
-	import CustomDialog from '@/components/Dialog'
-	import moment from 'moment'
-	import { mapActions, mapGetters } from 'vuex'
-	export default {
-		data() {
-			return {
-				dialog: false,
-				maxWidth: '700px',
-				search: '',
-				detailsInfo: {},
-				detailsInfoPayload: {},
-				btnUpdate: false,
-				headers: [
-					{
-						text: 'Payment Date Created',
-					},
-					{
-						text: 'Actual Payment',
-					},
-					{
-						text: 'Penalty',
-					},
-					{
-						text: 'SK',
-					},
-					{
-						text: 'Payment Date Updated',
-					},
-					{
-						text: 'Action',
-					},
-				],
+import Card from '@/components/Card'
+import CustomDialog from '@/components/Dialogs/Dialog'
+import moment from 'moment'
+import { mapActions, mapGetters } from 'vuex'
+export default {
+	data() {
+		return {
+			dialog: false,
+			maxWidth: '700px',
+			search: '',
+			detailsInfo: {},
+			detailsInfoPayload: {},
+			btnUpdate: false,
+			headers: [
+				{
+					text: 'Payment Date Created',
+				},
+				{
+					text: 'Actual Payment',
+				},
+				{
+					text: 'Penalty',
+				},
+				{
+					text: 'SK',
+				},
+				{
+					text: 'Payment Date Updated',
+				},
+				{
+					text: 'Action',
+				},
+			],
+		}
+	},
+
+	methods: {
+		...mapActions({
+			GP2_GET_DATA_DETAILS: 'gp2/GP2_GET_DATA_DETAILS',
+			GP2_UPDATE_DETAILS: 'gp2/GP2_UPDATE_DETAILS',
+		}),
+		onUpdateDetails(details) {
+			this.dialog = true
+			this.detailsInfoPayload.id = details.uuid
+			this.detailsInfoPayload.codename = this.$route.params.codename
+			this.detailsInfoPayload.uuid = this.$route.params.uuid
+			this.detailsInfo.paymentDateCreated = details.createdAt
+			this.detailsInfo.paymentDateUpdated = details.updatedAt
+			this.detailsInfoPayload.payment = details.payment
+			this.detailsInfoPayload.penalty = details.penalty
+			this.detailsInfoPayload.sk = details.sk
+		},
+		updateDetails() {
+			if (this.$refs.formUpdateDetails.validate()) {
+				this.btnUpdate = true
+				this.GP2_UPDATE_DETAILS(this.detailsInfoPayload)
+					.then((response) => {
+						this.btnUpdate = false
+						this.dialog = false
+						this.$refs.formUpdateDetails.resetValidation()
+						this.GP2_GET_DATA_DETAILS(this.$route.params)
+					})
+					.catch((error) => {
+						console.error(error)
+						this.btnUpdate = false
+						this.$toast.error('Something went wrong...')
+					})
 			}
 		},
-
-		methods: {
-			...mapActions({
-				GP2_GET_DATA_DETAILS: 'gp2/GP2_GET_DATA_DETAILS',
-				GP2_UPDATE_DETAILS: 'gp2/GP2_UPDATE_DETAILS',
-			}),
-			onUpdateDetails(details) {
-				this.dialog = true
-				this.detailsInfoPayload.id = details.uuid
-				this.detailsInfoPayload.codename = this.$route.params.codename
-				this.detailsInfoPayload.uuid = this.$route.params.uuid
-				this.detailsInfo.paymentDateCreated = details.createdAt
-				this.detailsInfo.paymentDateUpdated = details.updatedAt
-				this.detailsInfoPayload.payment = details.payment
-				this.detailsInfoPayload.penalty = details.penalty
-				this.detailsInfoPayload.sk = details.sk
-			},
-			updateDetails() {
-				if (this.$refs.formUpdateDetails.validate()) {
-					this.btnUpdate = true
-					this.GP2_UPDATE_DETAILS(this.detailsInfoPayload)
-						.then((response) => {
-							this.btnUpdate = false
-							this.dialog = false
-							this.$refs.formUpdateDetails.resetValidation()
-							this.GP2_GET_DATA_DETAILS(this.$route.params)
-						})
-						.catch((error) => {
-							console.error(error)
-							this.btnUpdate = false
-							this.$toast.error('Something went wrong...')
-						})
-				}
-			},
-			formatDate(date) {
-				return moment(date).format('MMMM DD, YYYY')
-			},
+		formatDate(date) {
+			return moment(date).format('MMMM DD, YYYY')
 		},
-		computed: {
-			...mapGetters({ GP2_GETT_DATA_DETAILS: 'gp2/GP2_GETT_DATA_DETAILS' }),
-		},
-		components: {
-			Card,
-			CustomDialog,
-		},
-	}
+	},
+	computed: {
+		...mapGetters({ GP2_GETT_DATA_DETAILS: 'gp2/GP2_GETT_DATA_DETAILS' }),
+	},
+	components: {
+		Card,
+		CustomDialog,
+	},
+}
 </script>

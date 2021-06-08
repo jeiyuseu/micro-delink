@@ -1,6 +1,6 @@
 'use strict'
 const { Model } = require('sequelize')
-module.exports = (sequelize, DataTypes, SequelizeSlugify) => {
+module.exports = (sequelize, DataTypes, Slugify) => {
 	class clients extends Model {
 		/**
 		 * Helper method for defining associations.
@@ -49,6 +49,7 @@ module.exports = (sequelize, DataTypes, SequelizeSlugify) => {
 			},
 			slug: {
 				type: DataTypes.STRING,
+				unique:true
 			},
 		},
 		{
@@ -61,15 +62,12 @@ module.exports = (sequelize, DataTypes, SequelizeSlugify) => {
 					client.lastName = client.lastName.toLowerCase()
 					client.middleInitial = client.middleInitial.toLowerCase()
 					client.address = client.address.toLowerCase()
+					client.slug = Slugify(`${client.firstName.toLowerCase()} ${client.middleInitial.toLowerCase()} ${client.lastName.toLowerCase()}`)
 					return client
 				},
 			},
 		}
 	)
-
-	SequelizeSlugify.slugifyModel(clients, {
-		source: ['firstName', 'middleInitial', 'lastName'],
-	})
 
 	return clients
 }

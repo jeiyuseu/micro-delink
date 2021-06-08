@@ -302,7 +302,20 @@
 							<td>{{ moment(item.dateOfFirstPayment).format('MMMM DD, YYYY') }}</td>
 							<td>{{ moment(item.dateOfLastPayment).format('MMMM DD, YYYY') }}</td>
 							<td class="text-center">
-								<v-icon dark @click="expand(!isExpanded), (show = !show)"> {{ isExpanded ? 'mdi-arrow-right' : 'mdi-arrow-down' }}</v-icon>
+								<v-tooltip bottom>
+									<template v-slot:activator="{ on, attrs }">
+										<v-icon class="mr-5" v-bind="attrs" v-on="on" dark @click="expand(!isExpanded), (show = !show)">
+											{{ isExpanded ? 'mdi-arrow-right' : 'mdi-arrow-down' }}</v-icon
+										>
+									</template>
+									<span> {{ isExpanded ? 'Hide Clients' : 'Show Clients' }}</span>
+								</v-tooltip>
+								<v-tooltip bottom>
+									<template v-slot:activator="{ on, attrs }">
+										<v-icon dark v-bind="attrs" v-on="on" @click="dialogEditInfo(item)">mdi-pencil</v-icon>
+									</template>
+									<span>Edit Details</span>
+								</v-tooltip>
 							</td>
 						</tr>
 					</template>
@@ -331,14 +344,31 @@
 								{{ client.userInfo !== null ? (moment(client.updatedAt).fromNow() ? ' | ' + moment(client.updatedAt).fromNow() : '') : '' }}
 							</td>
 							<td class="text-center">
-								<v-icon color="warning" class="mr-2" @click="dialogUpdateInfo(client, item)">
-									mdi-pencil
-								</v-icon>
-								<v-btn icon color="info" :to="`${$route.params.codename}/${client.clientInfo.slug}.${client.clientInfo.uuid}`">
-									<v-icon>
-										mdi-eye
-									</v-icon>
-								</v-btn>
+								<v-tooltip bottom>
+									<template v-slot:activator="{ on, attrs }">
+										<v-icon color="warning" v-bind="attrs" v-on="on" class="mr-2" @click="dialogUpdateInfo(client, item)">
+											mdi-update
+										</v-icon>
+									</template>
+									<span>Update Payment</span>
+								</v-tooltip>
+
+								<v-tooltip bottom>
+									<template v-slot:activator="{ on, attrs }">
+										<v-btn
+											icon
+											color="info"
+											v-bind="attrs"
+											v-on="on"
+											:to="`${$route.params.codename}/${client.clientInfo.slug}.${client.clientInfo.uuid}`"
+										>
+											<v-icon>
+												mdi-eye
+											</v-icon>
+										</v-btn>
+									</template>
+									<span>View Payment History</span>
+								</v-tooltip>
 							</td>
 						</tr>
 						<tr class="grey lighten-3 font-weight-bold">
@@ -367,11 +397,13 @@
 				</v-data-table>
 			</div>
 		</card>
+		<EditInfo :editToggle="editToggle" :editInfo="editInfo" />
 	</div>
 </template>
 
 <script>
-import CustomDialog from '@/components/Dialog'
+import EditInfo from '@/components/Dialogs/EditGp2Info'
+import CustomDialog from '@/components/Dialogs/Dialog'
 import Card from '@/components/Card'
 import { mapActions, mapGetters } from 'vuex'
 import ExcelJS from 'exceljs'
@@ -397,6 +429,8 @@ export default {
 			menuDateOfReleased: false,
 			menuFirstOfPayment: false,
 			filteredData: [],
+			editToggle: false,
+			editInfo: {},
 			dialogUpdateInfos: {
 				name: '',
 				lr: '',
@@ -479,6 +513,7 @@ export default {
 	components: {
 		Card,
 		CustomDialog,
+		EditInfo,
 	},
 	created() {
 		this.filteredData = this.GP2_GETT_DATA.gp2Info || []
@@ -557,7 +592,6 @@ export default {
 			this.clientUpdateForm.gp2InfoUuid = item.uuid
 			this.clientUpdateForm.updatedBy = this.AUTH_GETT_USER.uuid
 		},
-
 		loanTerm: function() {
 			if (this.staffClientForm.info.weeksToPay === 16) {
 				const date = new Date(this.staffClientForm.info.dateOfFirstPayment)
@@ -568,7 +602,11 @@ export default {
 				this.staffClientForm.info.dateOfLastPayment = newYear ? `${newYear}-${newMonth.slice(-2)}-${newDate.slice(-2)}` : ''
 			}
 		},
-
+		dialogEditInfo: function(info) {
+			this.editToggle = true
+			this.editInfo = info
+			console.log(info)
+		},
 		export: function() {
 			this.btnExport = true
 			this.GP2_GET_DATA(this.$route.params.codename)

@@ -118,7 +118,7 @@
 				</custom-dialog>
 				<custom-dialog :modal="dialogDelete" width="290px">
 					<div slot="modal-title">Delete {{ dialogInfoDelete.name }}?</div>
-					<div slot="modal-text">{{ dialogInfoDelete.name }} is deleted...</div>
+					<div slot="modal-text">{{ dialogInfoDelete.name }} will be deleted...</div>
 					<div slot="modal-action" class="text-right">
 						<v-spacer></v-spacer>
 						<v-btn color="red darken-1" @click.stop="dialogDelete = false" text>Cancel</v-btn>
@@ -289,7 +289,7 @@
 
 <script>
 import Card from '@/components/Card'
-import CustomDialog from '@/components/Dialog'
+import CustomDialog from '@/components/Dialogs/Dialog'
 import { mapActions, mapGetters, mapMutations } from 'vuex'
 
 export default {
