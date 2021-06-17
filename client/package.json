@@ -26,6 +26,7 @@
     "vue-disable-autocomplete": "0.0.4",
     "vue-progressbar": "^0.7.5",
     "vue-router": "^3.4.9",
+    "vue-smooth-reflow": "^0.1.12",
     "vue-the-mask": "^0.11.1",
     "vue-toast-notification": "^0.6.0",
     "vuetify": "^2.4.3",

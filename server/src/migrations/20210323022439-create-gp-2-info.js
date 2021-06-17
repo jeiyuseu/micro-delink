@@ -12,7 +12,7 @@ module.exports = {
 				type: DataTypes.UUID,
 				allowNull: false,
 			},
-		
+
 			gp2InfoCodeId: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
@@ -23,6 +23,10 @@ module.exports = {
 			},
 			branchId: {
 				type: DataTypes.INTEGER,
+				allowNull: false,
+			},
+			isVirgin: {
+				type: DataTypes.BOOLEAN,
 				allowNull: false,
 			},
 			dateOfReleased: {

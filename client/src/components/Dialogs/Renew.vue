@@ -1,39 +1,26 @@
 <template>
 	<div>
-		<Dialog :modal="editToggle" :width="'700px'">
+		<Dialog :modal="renewToggle" :width="'700px'">
 			<div slot="modal-title">
-				Edit Info
+				Renew
 			</div>
 			<div slot="modal-text">
-				<v-form @submit.prevent="editInfos" ref="formEditInfo">
-					<v-container grid-list-md>
-						<v-row>
-							<v-col cols="12">
-								<v-text-field
-									v-model.trim="formData.codeNameId"
-									label="* New Codename"
-									prepend-inner-icon="mdi-text-box-plus-outline"
-									placeholder="E.G MA-01, MB-02, MC-03..."
-									autocomplete="off"
-									:rules="[(v) => !!v || 'Must a have a codename!']"
-									ref="infoDesc"
-								></v-text-field>
-							</v-col>
-						</v-row>
+				<v-form @submit.prevent="renew" ref="formRenew">
+					<v-container>
 						<v-row>
 							<v-col cols="6">
 								<v-menu ref="dateOfReleased" v-model="menuDateOfReleased" :close-on-content-click="false" transition="scale-transition" offset-y max-width="290px" min-width="auto">
 									<template v-slot:activator="{ on, attrs }">
 										<v-text-field
-											v-model.trim="formData.dateOfReleased"
 											label="* Date of Released"
+											v-mask="'####-##-##'"
 											prepend-inner-icon="mdi-calendar"
+											autocomplete="off"
 											v-bind="attrs"
-											readonly
 											v-on="on"
 											clearable
-											autocomplete="off"
-											:rules="[(v) => !!v || 'Date of released is required!']"
+											v-model.trim="formData.dateOfReleased"
+											:rules="[(v) => !!v || 'Date of releasaed is required!']"
 										></v-text-field>
 									</template>
 
@@ -56,31 +43,32 @@
 									item-text="desc"
 									item-value="value"
 									prepend-inner-icon="mdi-view-week"
+									:rules="[(v) => !!v || 'Loan Term is required!']"
 									label="* Loan Term"
 									@change="loanTerm"
 									v-model="formData.weeksToPay"
-									:rules="[(v) => !!v || 'Loan Term is required!']"
 								></v-select>
 							</v-col>
 						</v-row>
+
 						<v-row>
 							<v-col cols="6">
 								<v-menu ref="dateOfFirstPayment" v-model="menuFirstOfPayment" :close-on-content-click="false" transition="scale-transition" offset-y max-width="290px" min-width="auto">
 									<template v-slot:activator="{ on, attrs }">
 										<v-text-field
-											v-model.trim="formData.dateOfFirstPayment"
 											label="* Date of First Payment"
+											v-mask="'####-##-##'"
+											:rules="[(v) => !!v || 'Date of First Payment is required!']"
 											autocomplete="off"
 											v-bind="attrs"
-											v-on="on"
-											readonly
 											clearable
 											prepend-inner-icon="mdi-calendar"
-											:rules="[(v) => !!v || 'Date of first payment is required!']"
+											v-on="on"
+											v-model="formData.dateOfFirstPayment"
 										></v-text-field>
 									</template>
 
-									<v-date-picker v-model.trim="formData.dateOfFirstPayment" no-title @change="loanTerm" scrollable>
+									<v-date-picker v-model="formData.dateOfFirstPayment" @change="loanTerm" no-title scrollable>
 										<v-spacer></v-spacer>
 										<div class="justify-end">
 											<v-btn text color="primary" @click="menuFirstOfPayment = false">
@@ -94,18 +82,25 @@
 								</v-menu>
 							</v-col>
 							<v-col cols="6">
-								<v-text-field v-model.trim="formData.dateOfLastPayment" label="* Date of Last Payment" autocomplete="off" prepend-inner-icon="mdi-calendar" readonly></v-text-field>
+								<v-text-field
+									v-model="formData.dateOfLastPayment"
+									label="* Date of Last Payment"
+									autocomplete="off"
+									:rules="[(v) => !!v || 'Date of Last Payment is required!']"
+									prepend-inner-icon="mdi-calendar"
+									readonly
+								></v-text-field>
 							</v-col>
 						</v-row>
 					</v-container>
 				</v-form>
 			</div>
 			<div slot="modal-action">
-				<v-btn color="primary darken-1" @click="$emit('close-edit-info')" text>
+				<v-btn color="primary darken-1" @click="$emit('close-renew')" text>
 					Close
 				</v-btn>
-				<v-btn color="primary darken-2" :loading="loading" class="font-weight-black" @click="editInfos" text>
-					Edit
+				<v-btn color="primary darken-2" class="font-weight-black" @click="renew" :loading="loading" text>
+					Renew
 				</v-btn>
 			</div>
 		</Dialog>
@@ -117,26 +112,49 @@
 	import { mapActions } from 'vuex'
 	export default {
 		props: {
-			editToggle: Boolean,
-			editInfo: Object,
+			renewToggle: Boolean,
+			renewInfo: Object,
+			alert: Object,
 		},
 		data() {
 			return {
-				loading: false,
-				menuDateOfReleased: false,
 				menuFirstOfPayment: false,
+				menuDateOfReleased: false,
+				loading: false,
 			}
 		},
 		computed: {
 			formData: {
-				get: function() {
-					return Object.assign({}, this.editInfo)
+				get() {
+					return Object.assign({}, this.renewInfo)
 				},
 			},
 		},
 		methods: {
-			...mapActions({ GP2_EDIT_INFO: 'gp2/GP2_EDIT_INFO' }),
-
+			...mapActions({ GP2_RENEW: 'gp2/GP2_RENEW' }),
+			renew: function() {
+				if (this.$refs.formRenew.validate()) {
+					this.alert.body = ''
+					this.loading = true
+					const { dateOfFirstPayment, dateOfLastPayment, dateOfReleased, uuid, weeksToPay } = this.formData
+					this.GP2_RENEW({ dateOfFirstPayment, dateOfLastPayment, dateOfReleased, uuid, weeksToPay })
+						.then(({ data }) => {
+							for (const key in data.msg) {
+								this.renewInfo[key] = data.msg[key]
+							}
+							this.alert.type = 'success'
+							this.alert.body = this.renewInfo.codeNameId.toUpperCase() + ' renewed successfully!'
+							this.$emit('close-renew')
+							this.loading = false
+						})
+						.catch((error) => {
+							this.loading = false
+							this.alert.type = 'error'
+							this.alert.body = error.response.data.error
+							console.log(error)
+						})
+				}
+			},
 			loanTerm: function() {
 				if (this.formData.weeksToPay === 16) {
 					const date = new Date(this.formData.dateOfFirstPayment)
@@ -145,29 +163,6 @@
 					const newDate = '0' + date.getDate()
 					const newYear = date.getFullYear()
 					this.formData.dateOfLastPayment = newYear ? `${newYear}-${newMonth.slice(-2)}-${newDate.slice(-2)}` : ''
-				}
-			},
-			editInfos: function() {
-				if (this.$refs.formEditInfo.validate()) {
-					this.loading = true
-					this.GP2_EDIT_INFO(this.formData)
-						.then(({ data }) => {
-							console.log(data)
-							for (const key in data.msg) {
-								this.editInfo[key] = data.msg[key]
-							}
-							this.loading = false
-							this.$emit('close-edit-info')
-							this.$refs.formEditInfo.resetValidation()
-							this.$toast.success(`${data.msg.codeNameId} successfully updated!`.toUpperCase())
-						})
-						.catch((error) => {
-							console.log(error)
-							this.loading = false
-							this.$emit('close-edit-info')
-							this.$refs.formEditInfo.resetValidation()
-							this.$toast.error('Something went wrong...')
-						})
 				}
 			},
 		},

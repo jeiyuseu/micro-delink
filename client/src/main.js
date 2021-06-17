@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import App from './App.vue'
 import router from './routes'
-import api from '@/services/api.js'
+import api from '@/services/api'
 import vuetify from './plugins/vuetify'
 import '@mdi/font/css/materialdesignicons.min.css'
 import './plugins/vue-toast-notification'
@@ -10,7 +10,9 @@ import './plugins/vue-progressbar'
 import './plugins/moment'
 import './plugins/vue-mask'
 import store from '@/store'
+import { sync } from 'vuex-router-sync'
 
+sync(store, router)
 Vue.config.productionTip = false
 
 store

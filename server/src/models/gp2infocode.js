@@ -18,11 +18,8 @@ module.exports = (sequelize, DataTypes) => {
 				defaultValue: DataTypes.UUIDV4,
 			},
 			name: {
-				type: DataTypes.STRING(11),
+				type: DataTypes.STRING(255),
 				allowNull: false,
-				unique: {
-					msg: 'Codename already in used!',
-				},
 			},
 		},
 		{

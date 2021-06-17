@@ -1,4 +1,5 @@
 import api from '@/services/api'
+import routes from '@/routes'
 export default {
 	namespaced: true,
 	state: {
@@ -16,9 +17,6 @@ export default {
 		},
 		GP2_GETT_DATA_COMPLETED: (state) => {
 			return state.gp2Completed
-		},
-		GP2_GETT_DATA_INFO_CODENAME: (state) => {
-			return state.gp2InfoCodename
 		},
 	},
 	actions: {
@@ -48,34 +46,66 @@ export default {
 					})
 			})
 		},
+		GP2_INSERT_CLUSTER: (context, payload) => {
+			const { codename } = routes.currentRoute.params
+			return new Promise((resolve, reject) => {
+				api
+					.post(`gp2/${codename}`, { ...payload })
+					.then((response) => {
+						resolve(response)
+					})
+					.catch((error) => {
+						reject(error)
+					})
+			})
+		},
+		GP2_INSERT_CLUSTER_CLIENT: (context, payload) => {
+			const { formData, clusterId } = payload
+			const { codename } = routes.currentRoute.params
+
+			return new Promise((resolve, reject) => {
+				api
+					.post(`gp2/${codename}/${clusterId}`, formData)
+					.then((response) => {
+						resolve(response)
+					})
+					.catch((error) => {
+						reject(error)
+					})
+			})
+		},
+		GP2_UPDATE_CLIENT: ({ rootGetters }, payload) => {
+			const { uuid, installment, sk, penalty } = payload
+			const { codename } = routes.currentRoute.params
+			return new Promise((resolve, reject) => {
+				api
+					.patch(`gp2/${codename}/${uuid}/update`, { installment, sk, penalty, userId: rootGetters['auth/AUTH_GETT_USER'] })
+					.then((response) => {
+						resolve(response)
+					})
+					.catch((error) => {
+						reject(error)
+					})
+			})
+		},
+		GP2_RENEW: ({ _ }, payload) => {
+			const { codename } = routes.currentRoute.params
+			return new Promise((resolve, reject) => {
+				api
+					.patch(`gp2/${codename}/completed-accounts/${payload.uuid}/renew`, payload)
+					.then((response) => {
+						resolve(response)
+					})
+					.catch((error) => {
+						reject(error)
+					})
+			})
+		},
 		GP2_RELOAN: ({ _ }, payload) => {
+			const { codename } = routes.currentRoute.params
 			return new Promise((resolve, reject) => {
 				api
-					.patch(`gp2/${payload.codename}/completed-accounts`, payload.payload)
-					.then((response) => {
-						resolve(response)
-					})
-					.catch((error) => {
-						reject(error)
-					})
-			})
-		},
-		GP2_INSERT_CLIENT: ({ commit }, payload) => {
-			return new Promise((resolve, reject) => {
-				api
-					.post(`gp2/${payload.codename}`, { ...payload })
-					.then((response) => {
-						resolve(response)
-					})
-					.catch((error) => {
-						reject(error)
-					})
-			})
-		},
-		GP2_UPDATE_CLIENT: ({ _ }, payload) => {
-			return new Promise((resolve, reject) => {
-				api
-					.patch(`gp2/${payload.codename}`, { ...payload })
+					.patch(`gp2/${codename}/completed-accounts/${payload.uuid}/reloan`, payload)
 					.then((response) => {
 						resolve(response)
 					})
@@ -97,7 +127,6 @@ export default {
 					})
 			})
 		},
-
 		GP2_UPDATE_DETAILS: ({ commit }, payload) => {
 			return new Promise((resolve, reject) => {
 				api
@@ -123,12 +152,13 @@ export default {
 					})
 			})
 		},
-		GP2_INFO_CODENAME: ({ commit }, codename) => {
+		GP2_EDIT_INFO: ({ _ }, payload) => {
+			const { uuid, codeNameId, dateOfFirstPayment, dateOfLastPayment, dateOfReleased, weeksToPay } = payload
+			const { codename } = routes.currentRoute.params
 			return new Promise((resolve, reject) => {
 				api
-					.get(`gp2/${codename}/info`)
+					.patch(`gp2/${codename}/${uuid}/edit`, { codename: codeNameId, dateOfFirstPayment, dateOfLastPayment, dateOfReleased, weeksToPay })
 					.then((response) => {
-						commit('GP2_SET_DATA_INFO_CODENAME', response.data)
 						resolve(response)
 					})
 					.catch((error) => {
@@ -146,9 +176,6 @@ export default {
 		},
 		GP2_SET_DATA_COMPLETED: (state, data) => {
 			state.gp2Completed = data
-		},
-		GP2_SET_DATA_INFO_CODENAME: (state, data) => {
-			state.gp2InfoCodename = data
 		},
 	},
 }

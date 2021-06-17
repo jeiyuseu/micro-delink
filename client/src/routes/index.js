@@ -79,7 +79,6 @@ const Router = new VueRouter({
 
 						try {
 							await store.dispatch('gp2/GP2_GET_DATA', to.params.codename)
-							await store.dispatch('gp2/GP2_INFO_CODENAME', to.params.codename)
 							await store.dispatch('clients/CLIENT_GET_DATA_ALL')
 							next()
 						} catch (error) {

@@ -16,12 +16,12 @@ module.exports = (sequelize, DataTypes) => {
 		toJSON() {
 			return {
 				...this.get(),
-				id: (
-					this.get().staffs.codeName +
-					'-' +
-					this.get().codename.name).toUpperCase(),
+				id: undefined,
+				gp2InfoCodeId: undefined,
 				staffId: undefined,
 				branchId: undefined,
+				staffs: undefined,
+				codename: undefined,
 			}
 		}
 	}
@@ -31,7 +31,6 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.UUID,
 				defaultValue: DataTypes.UUIDV4,
 			},
-		
 			staffId: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
@@ -42,6 +41,10 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			gp2InfoCodeId: {
 				type: DataTypes.INTEGER,
+				allowNull: false,
+			},
+			isVirgin: {
+				type: DataTypes.BOOLEAN,
 				allowNull: false,
 			},
 			dateOfReleased: {
@@ -67,6 +70,18 @@ module.exports = (sequelize, DataTypes) => {
 			loanCycle: {
 				type: DataTypes.INTEGER,
 				defaultValue: 0,
+			},
+			codeNameId: {
+				type: DataTypes.VIRTUAL,
+				get() {
+					return this.get('codename').name
+				},
+			},
+			staffCodeNameId: {
+				type: DataTypes.VIRTUAL,
+				get() {
+					return this.get('staffs').codeName
+				},
 			},
 		},
 		{

@@ -11,15 +11,15 @@ module.exports = {
 			uuid: {
 				type: DataTypes.UUID,
 				allowNull: false,
-				unique: true,
+				unique: true, // useful for bulkCreateUpdate
 			},
 			infoId: {
 				type: DataTypes.INTEGER,
-				// allowNull: false,
+				allowNull: false,
 			},
 			clientId: {
 				type: DataTypes.INTEGER,
-				// allowNull: false,
+				allowNull: false,
 				unique: true,
 			},
 			lr: {

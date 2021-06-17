@@ -12,9 +12,8 @@ module.exports = {
 				type: DataTypes.UUID,
 			},
 			name: {
-				type: DataTypes.STRING(11),
+				type: DataTypes.STRING(255),
 				allowNull: false,
-				unique: true,
 			},
 			createdAt: {
 				allowNull: false,

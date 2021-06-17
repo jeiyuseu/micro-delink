@@ -4,7 +4,6 @@
 			<v-card-title>
 				<slot name="modal-title"></slot>
 			</v-card-title>
-
 			<v-card-text>
 				<slot name="modal-text"></slot>
 			</v-card-text>

@@ -31,11 +31,14 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			infoId: {
 				type: DataTypes.INTEGER,
-				// allowNull: false,
+				allowNull: false,
 			},
 			clientId: {
 				type: DataTypes.INTEGER,
-				// allowNull: false,
+				allowNull: false,
+				unique: {
+					msg: 'Client has already in used!',
+				},
 			},
 			lr: {
 				type: DataTypes.INTEGER,
