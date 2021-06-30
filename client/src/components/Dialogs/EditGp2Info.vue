@@ -152,21 +152,17 @@
 					this.loading = true
 					this.GP2_EDIT_INFO(this.formData)
 						.then(({ data }) => {
-							console.log(data)
 							for (const key in data.msg) {
 								this.editInfo[key] = data.msg[key]
 							}
 							this.loading = false
 							this.$emit('close-edit-info')
-							this.$refs.formEditInfo.resetValidation()
-							this.$toast.success(`${data.msg.codeNameId} successfully updated!`.toUpperCase())
+							this.$toasted.success(data.msg.codeNameId.toUpperCase() + ' is edited!', { icon: 'check' })
 						})
 						.catch((error) => {
 							console.log(error)
 							this.loading = false
-							this.$emit('close-edit-info')
-							this.$refs.formEditInfo.resetValidation()
-							this.$toast.error('Something went wrong...')
+							this.$toasted.error('Something went wrong...', { icon: 'close' })
 						})
 				}
 			},

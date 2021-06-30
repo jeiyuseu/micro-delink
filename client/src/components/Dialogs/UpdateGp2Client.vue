@@ -63,6 +63,11 @@
 				},
 			}
 		},
+		computed: {
+			fullName: function() {
+				return this.clientInfo.clientInfo.firstName + ' ' + this.clientInfo.clientInfo.middleInitial + ' ' + this.clientInfo.clientInfo.lastName
+			},
+		},
 		methods: {
 			...mapActions({ GP2_UPDATE_CLIENT: 'gp2/GP2_UPDATE_CLIENT' }),
 			resetForm: function() {
@@ -74,7 +79,10 @@
 			updateClient: function() {
 				if (this.$refs.formClientUpdate.validate()) {
 					this.loading = true
-					this.GP2_UPDATE_CLIENT({ ...this.formData, uuid: this.clientInfo.uuid })
+					this.GP2_UPDATE_CLIENT({
+						...this.formData,
+						uuid: this.clientInfo.uuid,
+					})
 						.then(({ data }) => {
 							for (const key in data.msg.totals) {
 								this.items.totals[key] = data.msg.totals[key]
@@ -89,12 +97,12 @@
 							this.resetForm()
 
 							this.$emit('close-update-client')
-							this.$toast.success('updated!')
+							this.$toasted.success('Payment of ' + this.$titleize(this.fullName) + ' is updated!', { icon: 'check' })
 						})
 						.catch((error) => {
-							this.loading = false
 							console.log(error)
-							this.$toast.success('Something went wrong...')
+							this.loading = false
+							this.$toasted.error('Something went wrong...', { icon: 'close' })
 						})
 				}
 			},

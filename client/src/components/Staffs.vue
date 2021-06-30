@@ -76,17 +76,7 @@
 										</v-text-field>
 									</v-col>
 									<v-col cols="4">
-										<v-textarea
-											autocomplete="off"
-											rows="1"
-											auto-grow
-											label="Address"
-											prepend-inner-icon="mdi-map-marker"
-											v-model.trim="staffForm.address"
-											name="address"
-											required
-										>
-										</v-textarea>
+										<v-textarea autocomplete="off" rows="1" auto-grow label="Address" prepend-inner-icon="mdi-map-marker" v-model.trim="staffForm.address" name="address" required> </v-textarea>
 									</v-col>
 								</v-row>
 								<v-row>
@@ -100,29 +90,29 @@
 											:rules="[(v) => !!v || 'Branch is required!']"
 										>
 											<template v-slot:selection="{ item }">
-												{{ item.branchName.toUpperCase() }}
+												{{ $titleize(item.branchName) }}
 											</template>
 											<template v-slot:item="{ item }">
-												{{ item.branchName.toUpperCase() }}
+												{{ $titleize(item.branchName) }}
 											</template>
 										</v-select>
 									</v-col>
 								</v-row>
 							</v-container>
-							<v-card-actions class="justify-end">
-								<v-btn color="primary darken-1" @click="toggleDialog" text>
-									Close
-								</v-btn>
-								<v-btn color="primary darken-1" :loading="btnToggle" type="submit" text>
-									{{ vFormStatus === 'onAdd' ? 'Add' : 'Edit' }}
-								</v-btn>
-							</v-card-actions>
 						</v-form>
+					</div>
+					<div slot="modal-action">
+						<v-btn color="primary darken-1" @click="toggleDialog" text>
+							Close
+						</v-btn>
+						<v-btn color="primary darken-1" :loading="btnToggle" @click="vFormStatus === 'onAdd' ? addStaff() : editStaff()" text>
+							{{ vFormStatus === 'onAdd' ? 'Add' : 'Edit' }}
+						</v-btn>
 					</div>
 				</custom-dialog>
 			</div>
 			<div slot="card-text">
-				<v-card>
+				<v-card class="elevation-5 mb-6">
 					<v-card-text>
 						<v-row>
 							<v-col cols="12">
@@ -136,14 +126,12 @@
 						</v-row>
 					</v-card-text>
 				</v-card>
-				<v-card-title>
-					<v-text-field v-model="search" append-icon="mdi-magnify" label="Search staff..." single-line hide-details></v-text-field
-				></v-card-title>
-				<v-data-table :headers="headers" :items="filteredData" :items-per-page="5" class="elevation-1">
+				<v-text-field solo class="elevation-4 mb-6" v-model="search" append-icon="mdi-magnify" label="Search staff..." single-line hide-details></v-text-field>
+				<v-data-table :headers="headers" :items="filteredData" :items-per-page="5" class="elevation-10 mb-6">
 					<template v-slot:item="{ item }">
 						<tr>
-							<td>{{ (item.firstName + ' ' + item.lastName).toUpperCase() }}</td>
-							<td>{{ item.branch.branchName.toUpperCase() }}</td>
+							<td>{{ $titleize(item.firstName + ' ' + item.lastName) }}</td>
+							<td>{{ $titleize(item.branch.branchName) }}</td>
 							<td class="text-center">
 								<v-btn :disabled="true" color="error" icon>
 									<v-icon>mdi-delete</v-icon>
@@ -161,135 +149,135 @@
 </template>
 
 <script>
-import CustomDialog from '@/components/Dialogs/Dialog'
-import Card from '@/components/Card'
-import { mapActions, mapGetters } from 'vuex'
+	import CustomDialog from '@/components/Dialogs/Dialog'
+	import Card from '@/components/Card'
+	import { mapActions, mapGetters } from 'vuex'
 
-export default {
-	data() {
-		return {
-			dialog: false,
-			maxWidth: '700px',
-			search: '',
-			btnToggle: false,
-			filteredData: [],
-			vFormStatus: 'onAdd',
-			headers: [
-				{
-					text: 'Staff Name',
-					align: 'start',
-					sortable: false,
+	export default {
+		data() {
+			return {
+				dialog: false,
+				maxWidth: '700px',
+				search: '',
+				btnToggle: false,
+				filteredData: [],
+				vFormStatus: 'onAdd',
+				headers: [
+					{
+						text: 'Staff Name',
+						align: 'start',
+						sortable: false,
+					},
+					{
+						text: 'Branch Assigned',
+						align: 'start',
+						sortable: false,
+					},
+					{
+						text: 'Action',
+						align: 'center',
+						sortable: false,
+					},
+				],
+				staffForm: {
+					uuidBranchId: '',
+					firstName: '',
+					lastName: '',
+					codeName: '',
+					idNo: '',
+					contactNo: '',
+					address: '',
 				},
-				{
-					text: 'Branch Assigned',
-					align: 'start',
-					sortable: false,
-				},
-				{
-					text: 'Action',
-					align: 'center',
-					sortable: false,
-				},
-			],
-			staffForm: {
-				uuidBranchId: '',
-				firstName: '',
-				lastName: '',
-				codeName: '',
-				idNo: '',
-				contactNo: '',
-				address: '',
-			},
-		}
-	},
-	components: {
-		Card,
-		CustomDialog,
-	},
-	created() {
-		this.filteredData = this.STAFF_GETT_DATA
-	},
-	methods: {
-		...mapActions({
-			STAFF_GET_DATA: 'staffs/STAFF_GET_DATA',
-			STAFF_INSERT_DATA: 'staffs/STAFF_INSERT_DATA',
-			STAFF_UPDATE_DATA: 'staffs/STAFF_UPDATE_DATA',
-		}),
-		toggleDialog() {
-			this.dialog = !this.dialog
-			this.formReset()
-		},
-		formReset: function() {
-			for (const key in this.staffForm) {
-				this.staffForm[key] = ''
 			}
-			this.$refs.formStaff.resetValidation()
-			delete this.staffForm.uuid
 		},
-		addStaff: function() {
-			if (this.$refs.formStaff.validate()) {
-				this.btnToggle = true
-				this.STAFF_INSERT_DATA(this.staffForm)
-					.then(({ data }) => {
-						this.filteredData.push(data.msg)
-						this.$toast.success(`${data.msg.firstName} ${data.msg.lastName} is added!`.toUpperCase())
-						this.btnToggle = false
+		components: {
+			Card,
+			CustomDialog,
+		},
+		created() {
+			this.filteredData = this.STAFF_GETT_DATA
+		},
+		methods: {
+			...mapActions({
+				STAFF_GET_DATA: 'staffs/STAFF_GET_DATA',
+				STAFF_INSERT_DATA: 'staffs/STAFF_INSERT_DATA',
+				STAFF_UPDATE_DATA: 'staffs/STAFF_UPDATE_DATA',
+			}),
+			toggleDialog() {
+				this.dialog = !this.dialog
+				this.formReset()
+			},
+			formReset: function() {
+				for (const key in this.staffForm) {
+					this.staffForm[key] = ''
+				}
+				this.$refs.formStaff.resetValidation()
+				delete this.staffForm.uuid
+			},
+			addStaff: function() {
+				if (this.$refs.formStaff.validate()) {
+					this.btnToggle = true
+					this.STAFF_INSERT_DATA(this.staffForm)
+						.then(({ data }) => {
+							this.filteredData.push(data.msg)
+							this.$toasted.success(this.$titleize(data.msg.firstName + ' ' + data.msg.lastName) + ' is added!', { icon: 'check' })
+							this.btnToggle = false
+							this.dialog = false
+							this.formReset()
+						})
+						.catch((error) => {
+							this.btnToggle = false
+							this.$toasted.error('Something went wrong...', { icon: 'close' })
+							console.error(error)
+						})
+				}
+			},
+			editStaffInfo: function(data) {
+				this.dialog = true
+				this.vFormStatus = 'onUpdate'
+				for (const key in this.staffForm) {
+					this.staffForm[key] = data[key]
+				}
+				this.staffForm.uuidBranchId = data.branch.uuid
+				this.staffForm.uuid = data.uuid
+			},
+			editStaff: function() {
+				if (this.$refs.formStaff.validate()) {
+					this.STAFF_UPDATE_DATA(this.staffForm).then(({ data }) => {
+						this.filteredData.filter((value) => {
+							if (value.uuid === data.msg.uuid) {
+								for (const key in value) {
+									value[key] = data.msg[key]
+								}
+							}
+						})
+						this.$toast.success('Staff updated!')
 						this.dialog = false
+						this.btnToggle = false
 						this.formReset()
 					})
-					.catch((error) => {
-						this.btnToggle = false
-						this.$toast.error(error.response.data.error)
-						console.error(error)
-					})
-			}
+				}
+			},
 		},
-		editStaffInfo: function(data) {
-			this.dialog = true
-			this.vFormStatus = 'onUpdate'
-			for (const key in this.staffForm) {
-				this.staffForm[key] = data[key]
-			}
-			this.staffForm.uuidBranchId = data.branch.uuid
-			this.staffForm.uuid = data.uuid
+		computed: {
+			...mapGetters({
+				STAFF_GETT_DATA: 'staffs/STAFF_GETT_DATA',
+				BRANCH_GETT_DATA: 'branch/BRANCH_GETT_DATA',
+			}),
 		},
-		editStaff: function() {
-			if (this.$refs.formStaff.validate()) {
-				this.STAFF_UPDATE_DATA(this.staffForm).then(({ data }) => {
-					this.filteredData.filter((value) => {
-						if (value.uuid === data.msg.uuid) {
-							for (const key in value) {
-								value[key] = data.msg[key]
-							}
-						}
-					})
-					this.$toast.success('Staff updated!')
-					this.dialog = false
-					this.btnToggle = false
-					this.formReset()
-				})
-			}
+		mounted() {
+			//check if branch state is set
+			// if (this.data.length === 0) {
+			//   this.$Progress.start()
+			//   this.get()
+			//     .then(() => {
+			//       this.$Progress.finish()
+			//     })
+			//     .catch((error) => {
+			//       console.error(error.response.data.error.message)
+			//       this.$Progress.fail()
+			//     })
+			// }
 		},
-	},
-	computed: {
-		...mapGetters({
-			STAFF_GETT_DATA: 'staffs/STAFF_GETT_DATA',
-			BRANCH_GETT_DATA: 'branch/BRANCH_GETT_DATA',
-		}),
-	},
-	mounted() {
-		//check if branch state is set
-		// if (this.data.length === 0) {
-		//   this.$Progress.start()
-		//   this.get()
-		//     .then(() => {
-		//       this.$Progress.finish()
-		//     })
-		//     .catch((error) => {
-		//       console.error(error.response.data.error.message)
-		//       this.$Progress.fail()
-		//     })
-		// }
-	},
-}
+	}
 </script>

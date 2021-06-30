@@ -1,12 +1,12 @@
 <template>
 	<v-app id="app">
-		<v-app-bar elevation="1" color="white" app fixed>
-			<v-app-bar-nav-icon v-if="AUTH_GETT_IS_AUTHENTICATED" @click="drawer = !drawer"></v-app-bar-nav-icon>
-			<v-toolbar-title class="overline font-weight-black text-uppercase indigo--text">Micro-Delink</v-toolbar-title>
+		<v-app-bar elevation="1" class="blue darken-4 " app fixed>
+			<v-app-bar-nav-icon color="white" v-if="AUTH_GETT_IS_AUTHENTICATED" @click="drawer = !drawer"></v-app-bar-nav-icon>
+			<v-toolbar-title class="overline font-weight-black text-uppercase white--text">Micro-Delink</v-toolbar-title>
 			<v-spacer></v-spacer>
 		</v-app-bar>
 
-		<v-navigation-drawer v-if="AUTH_GETT_IS_AUTHENTICATED" v-model="drawer" color="#000051" app flat dark width="200">
+		<v-navigation-drawer v-if="AUTH_GETT_IS_AUTHENTICATED" v-model="drawer" color="#000080" app flat dark width="200">
 			<template v-slot:prepend v-if="AUTH_GETT_IS_AUTHENTICATED">
 				<v-list-item class="blue darken-4" two-line>
 					<!-- <v-list-item-avatar>
@@ -22,7 +22,7 @@
 			</template>
 
 			<v-list app>
-				<v-subheader>MAIN</v-subheader>
+				<v-subheader class=" font-weight-bold white--text">MAIN</v-subheader>
 				<v-divider class="mb-2"></v-divider>
 				<v-list-item-group v-model="setActiveLink">
 					<v-list-item v-for="(menu, i) in menus" :key="i" @click="$router.push({ path: menu.link }).catch(() => {})">
@@ -58,9 +58,24 @@
 			return {
 				drawer: true,
 				menus: [
-					{ text: 'Dashboard', icon: 'mdi-chart-box', link: '/', name: 'dashboard' },
-					{ text: 'Branches', icon: 'mdi-office-building', link: '/branch', name: 'branch' },
-					{ text: 'Clients', icon: 'mdi-account-multiple', link: '/clients', name: 'clients' },
+					{
+						text: 'Dashboard',
+						icon: 'mdi-chart-box',
+						link: '/',
+						name: 'dashboard',
+					},
+					{
+						text: 'Branches',
+						icon: 'mdi-office-building',
+						link: '/branch',
+						name: 'branch',
+					},
+					{
+						text: 'Clients',
+						icon: 'mdi-account-multiple',
+						link: '/clients',
+						name: 'clients',
+					},
 					{
 						text: 'Staffs',
 						icon: 'mdi-account-supervisor-outline',
@@ -94,3 +109,11 @@
 		},
 	}
 </script>
+
+<style>
+	.toasting {
+		font-size: 140% !important;
+		font-weight: 800 !important;
+		padding: 15px !important;
+	}
+</style>

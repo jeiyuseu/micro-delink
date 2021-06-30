@@ -10,8 +10,11 @@ router.patch('/:codename/completed-accounts/:uuid/renew', auth, Gp2Controller.re
 router.get('/:codename/:uuid', auth, Gp2Controller.details)
 router.post('/:codename', auth, Gp2Controller.post)
 router.post('/:codename/:uuid', auth, Gp2Controller.postClient)
-router.patch('/:codename/:uuid/edit', auth, Gp2Controller.editInfo)
-router.patch('/:codename/:uuid/update', auth, Gp2Controller.updateClient)
-router.patch('/:codename/:uuid', auth, Gp2Controller.updateDetails)
+router.patch('/:codename/:uuid/edit-info', auth, Gp2Controller.editInfo)
+router.patch('/:codename/:uuid/update-client', auth, Gp2Controller.updateClient)
+router.patch('/:codename/:uuid/edit-client', auth, Gp2Controller.editClient)
+router.delete('/:codename/:uuid/delete-client', auth, Gp2Controller.deleteClient)
+router.delete('/:codename/:uuid/delete-info', auth, Gp2Controller.deleteInfo)
+router.patch('/:codename/:uuid/edit-details', auth, Gp2Controller.editDetails)
 
 module.exports = router

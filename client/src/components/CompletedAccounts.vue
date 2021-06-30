@@ -5,7 +5,7 @@
 				Completed Accounts
 			</div>
 			<div slot="card-text">
-				<v-data-table :headers="headers" :items="filteredData" :expanded.sync="expanded" item-key="uuid" class="elevation-2">
+				<v-data-table :headers="headers" :items="filteredData" :expanded.sync="expanded" item-key="uuid" class="elevation-10 mb-6">
 					<template v-slot:item="{ item, expand, isExpanded }">
 						<tr class="blue darken-4 white--text">
 							<td class="font-weight-bold text-uppercase">{{ item.staffCodeNameId + '-' + item.codeNameId }}</td>
@@ -33,16 +33,16 @@
 							<th class="text-center red--text"></th>
 						</tr>
 						<tr v-for="(client, i) in item.gp2Clients" :key="client.uuid">
-							<td colspan="2" class="font-weight-bold text-uppercase">
+							<td colspan="2" class="font-weight-bold ">
 								{{ i + 1 }}.
-								{{ (client.clientInfo.firstName + ' ' + client.clientInfo.middleInitial + ' ' + client.clientInfo.lastName).toUpperCase() }}
+								{{ $titleize(client.clientInfo.firstName + ' ' + client.clientInfo.middleInitial + ' ' + client.clientInfo.lastName) }}
 							</td>
 							<td>₱ {{ client.lr.toLocaleString() }}</td>
 							<td>₱ {{ client.skCum.toLocaleString() }}</td>
 							<td>₱ {{ client.wi.toLocaleString() }}</td>
 							<td>₱ {{ client.pastDue.toLocaleString() }}</td>
 							<td>
-								{{ client.userInfo !== null ? (client.userInfo.firstName + ' ' + client.userInfo.lastName).toUpperCase() : '' }}
+								{{ client.userInfo !== null ? $titleize(client.userInfo.firstName + ' ' + client.userInfo.lastName) : '' }}
 								{{ client.userInfo !== null ? (moment(client.updatedAt).fromNow() ? ' | ' + moment(client.updatedAt).fromNow() : '') : '' }}
 							</td>
 
@@ -79,7 +79,7 @@
 				</v-data-table>
 			</div>
 		</Card>
-		<Renew :renewToggle="renewToggle" :renewInfo="renewInfo" @close-renew="renewToggle = false" :alert="alert" />
+		<Renew :renewToggle="renewToggle" :renewInfo="renewInfo" @refresh-renew-clients="refreshRenewClients" @close-renew="renewToggle = false" :alert="alert" />
 		<Reloan :reloanToggle="reloanToggle" :reloanInfo="reloanInfo" :items="items" @refresh-reloan-clients="refreshReloanClients" @close-reloan="reloanToggle = false" :alert="alert" />
 	</div>
 </template>
@@ -172,6 +172,15 @@
 				GP2_RELOAN: 'gp2/GP2_RELOAN',
 				GP2_GET_DATA_COMPLETED: 'gp2/GP2_GET_DATA_COMPLETED',
 			}),
+			refreshRenewClients: function(infoId) {
+				this.filteredData.forEach((value) => {
+					if (infoId === value.uuid) {
+						if (value.gp2Clients.length === 0) {
+							this.filteredData = this.filteredData.filter((value) => value.uuid !== infoId)
+						}
+					}
+				})
+			},
 			refreshReloanClients: function(id) {
 				this.filteredData.forEach((value) => {
 					if (id === value.uuid) {

@@ -23,6 +23,11 @@ module.exports = {
 			gp2ClientId: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
+				// onDelete: 'CASCADE',
+				// references: {
+				// 	model: 'gp2Clients',
+				// 	key: 'id',
+				// },
 			},
 			payment: {
 				type: DataTypes.INTEGER,

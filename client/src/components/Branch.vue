@@ -21,26 +21,26 @@
 											prepend-inner-icon="mdi-domain"
 											class="branch-name"
 											maxlength="20"
-											:rules="[(v) => !!v || 'Branch is required']"
+											:rules="[(v) => !!v || 'Branch Name is required']"
 										>
 										</v-text-field>
 									</v-col>
 								</v-row>
 							</v-container>
-							<v-card-actions class="justify-end">
-								<v-btn color="primary darken-1" text @click=";(dialog = !dialog), $refs.formBranch.reset()">
-									Close
-								</v-btn>
-								<v-btn color="primary darken-1" type="submit" :loading="btnAddBranch" text>
-									Add
-								</v-btn>
-							</v-card-actions>
 						</v-form>
+					</div>
+					<div slot="modal-action">
+						<v-btn color="primary darken-1" text @click=";(dialog = !dialog), $refs.formBranch.reset()">
+							Close
+						</v-btn>
+						<v-btn color="primary darken-1" @click="addBranch" :loading="loading" text>
+							Add
+						</v-btn>
 					</div>
 				</custom-dialog>
 			</div>
 			<div slot="card-text">
-				<v-card>
+				<v-card class="mb-6 elevation-5">
 					<v-card-text>
 						<v-row>
 							<v-col cols="12">
@@ -54,14 +54,12 @@
 						</v-row>
 					</v-card-text>
 				</v-card>
-				<v-card-title>
-					<v-text-field v-model="search" append-icon="mdi-magnify" label="Search branch..." single-line hide-details></v-text-field
-				></v-card-title>
-				<v-data-table :headers="headers" :items="filteredData" :items-per-page="5" class="elevation-1" :search="search">
+				<v-text-field class="mb-6 elevation-4" solo v-model="search" append-icon="mdi-magnify" label="Search branch..." single-line hide-details></v-text-field>
+				<v-data-table :headers="headers" :items="filteredData" :items-per-page="5" class="elevation-10 mb-6" :search="search">
 					<template v-slot:item="{ item }">
 						<tr>
 							<td>
-								{{ item.branchName.toUpperCase() }}
+								{{ $titleize(item.branchName) }}
 							</td>
 							<td class="text-center ">
 								<v-btn color="primary" rounded :to="'branch/' + item.slug" class="mr-2">
@@ -87,92 +85,92 @@
 </template>
 
 <script>
-import CustomDialog from '@/components/Dialogs/Dialog'
-import Card from '@/components/Card'
-import { mapActions, mapGetters } from 'vuex'
-export default {
-	data() {
-		return {
-			filteredData: [],
-			headers: [
-				{
-					text: 'Branch Name',
-					align: 'start',
-					sortable: false,
-					value: 'branchName',
+	import CustomDialog from '@/components/Dialogs/Dialog'
+	import Card from '@/components/Card'
+	import { mapActions, mapGetters } from 'vuex'
+	export default {
+		data() {
+			return {
+				filteredData: [],
+				headers: [
+					{
+						text: 'Branch Name',
+						align: 'start',
+						sortable: false,
+						value: 'branchName',
+					},
+					{
+						text: 'Action',
+						align: 'center',
+						sortable: false,
+						value: false,
+					},
+				],
+				formBranch: {
+					branchName: '',
 				},
-				{
-					text: 'Action',
-					align: 'center',
-					sortable: false,
-					value: false,
-				},
-			],
-			formBranch: {
-				branchName: '',
-			},
-			search: '',
-			dialog: false,
-			maxWidth: '600px',
-			btnAddBranch: false,
-		}
-	},
-	created() {
-		this.filteredData = this.BRANCH_GETT_DATA
-	},
-	components: {
-		Card,
-		CustomDialog,
-	},
-	computed: {
-		...mapGetters({
-			BRANCH_GETT_DATA: 'branch/BRANCH_GETT_DATA',
-			BRANCH_GETT_SLUG: 'branch/BRANCH_GETT_SLUG',
-		}),
-	},
-	methods: {
-		...mapActions({
-			BRANCH_GET_DATA: 'branch/BRANCH_GET_DATA',
-			BRANCH_INSERT_DATA: 'branch/BRANCH_INSERT_DATA',
-		}),
-		addBranch() {
-			if (this.$refs.formBranch.validate()) {
-				this.btnAddBranch = true
-				this.BRANCH_INSERT_DATA(this.formBranch)
-					.then(({ data }) => {
-						this.filteredData.push(data.msg)
-						this.$toast.success(`${this.formBranch.branchName} is added!`.toUpperCase())
-						this.btnAddBranch = false
-						this.dialog = false
-						this.$refs.formBranch.reset()
-					})
-					.catch((error) => {
-						this.btnAddBranch = false
-						console.log(error)
-						this.$toast.error(`${this.formBranch.branchName} is exist!`)
-					})
+				search: '',
+				dialog: false,
+				maxWidth: '600px',
+				loading: false,
 			}
 		},
-	},
-	mounted() {
-		//check if branch state is set to avoid multiple request
-		// if (this.data.length === 0) {
-		//   this.$Progress.start()
-		//   this.get()
-		//     .then(() => {
-		//       this.$Progress.finish()
-		//     })
-		//     .catch((error) => {
-		//       console.error(error.response.data.error.message)
-		//       this.$Progress.fail()
-		//     })
-		// }
-	},
-}
+		created() {
+			this.filteredData = this.BRANCH_GETT_DATA
+		},
+		components: {
+			Card,
+			CustomDialog,
+		},
+		computed: {
+			...mapGetters({
+				BRANCH_GETT_DATA: 'branch/BRANCH_GETT_DATA',
+				BRANCH_GETT_SLUG: 'branch/BRANCH_GETT_SLUG',
+			}),
+		},
+		methods: {
+			...mapActions({
+				BRANCH_GET_DATA: 'branch/BRANCH_GET_DATA',
+				BRANCH_INSERT_DATA: 'branch/BRANCH_INSERT_DATA',
+			}),
+			addBranch() {
+				if (this.$refs.formBranch.validate()) {
+					this.loading = true
+					this.BRANCH_INSERT_DATA(this.formBranch)
+						.then(({ data }) => {
+							this.filteredData.push(data.msg)
+							this.$toast.success(`${this.formBranch.branchName} is added!`.toUpperCase())
+							this.loading = false
+							this.dialog = false
+							this.$refs.formBranch.reset()
+						})
+						.catch((error) => {
+							this.loading = false
+							console.log(error)
+							this.$toast.error(`${this.formBranch.branchName} is exist!`)
+						})
+				}
+			},
+		},
+		mounted() {
+			//check if branch state is set to avoid multiple request
+			// if (this.data.length === 0) {
+			//   this.$Progress.start()
+			//   this.get()
+			//     .then(() => {
+			//       this.$Progress.finish()
+			//     })
+			//     .catch((error) => {
+			//       console.error(error.response.data.error.message)
+			//       this.$Progress.fail()
+			//     })
+			// }
+		},
+	}
 </script>
 
 <style scoped>
-.branch-name input {
-	text-transform: uppercase;
-}
+	.branch-name input {
+		text-transform: uppercase;
+	}
 </style>

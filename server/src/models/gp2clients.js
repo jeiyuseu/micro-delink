@@ -1,5 +1,5 @@
 'use strict'
-const { Model } = require('sequelize')
+const { Model, Op } = require('sequelize')
 module.exports = (sequelize, DataTypes) => {
 	class gp2Clients extends Model {
 		/**
@@ -7,17 +7,22 @@ module.exports = (sequelize, DataTypes) => {
 		 * This method is not a part of Sequelize lifecycle.
 		 * The `models/index` file will call this method automatically.
 		 */
-		static associate({ Gp2Info, Clients, Users }) {
+		static associate({ Gp2Info, Clients, Users, Gp2Details }) {
 			// define association here
 			this.belongsTo(Gp2Info, { foreignKey: 'infoId', as: 'gp2Info' })
 			this.belongsTo(Clients, { foreignKey: 'clientId', as: 'clientInfo' })
 			this.belongsTo(Users, { foreignKey: 'updatedBy', as: 'userInfo' })
+			this.hasMany(Gp2Details, {
+				foreignKey: 'gp2ClientId',
+				onDelete: 'CASCADE',
+				hooks: true,
+			})
 		}
 		toJSON() {
 			return {
 				...this.get(),
 				id: undefined,
-				infoId: undefined,
+
 				clientId: undefined,
 			}
 		}
@@ -36,8 +41,19 @@ module.exports = (sequelize, DataTypes) => {
 			clientId: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
-				unique: {
-					msg: 'Client has already in used!',
+				validate: {
+					isUnique: (client, next) => {
+						gp2Clients
+							.findOne({
+								attributes: ['id', 'uuid'],
+								where: { clientId: client },
+								include: ['clientInfo'],
+							})
+							.then((result) => {
+								next(result.clientInfo.firstName + ' ' + result.clientInfo.middleInitial + ' ' + result.clientInfo.lastName + ' is exists!')
+							})
+							.catch(() => next())
+					},
 				},
 			},
 			lr: {

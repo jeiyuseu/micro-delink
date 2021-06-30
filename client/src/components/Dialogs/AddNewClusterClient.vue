@@ -3,24 +3,31 @@
 		<div slot="modal-title" class="d-flex justify-space-between" style="width: 100%">
 			Add New Cluster Client
 			<v-btn-toggle v-model="toggleNone">
-				<v-btn><v-icon color="primary darken-4" @click="formDatas.push({ id: '', loanAmount: '' })"> mdi-plus-thick </v-icon></v-btn>
-				<v-btn><v-icon color="primary darken-4" @click="formDatas.pop()" :disabled="formDatas.length <= 1"> mdi-minus-thick </v-icon></v-btn>
+				<v-btn
+					><v-icon color="primary darken-4" @click="formDatas.push({ id: '', loanAmount: '' })">
+						mdi-plus-thick
+					</v-icon></v-btn
+				>
+				<v-btn
+					><v-icon color="primary darken-4" @click="formDatas.pop()" :disabled="formDatas.length <= 1">
+						mdi-minus-thick
+					</v-icon></v-btn
+				>
 			</v-btn-toggle>
 		</div>
 		<div slot="modal-text">
+			<v-alert dense :v-if="errors" v-for="(error, i) in errors" :key="i" type="error">{{ $titleize(error.split(':')[1]) }} </v-alert>
 			<v-form @submit.prevent="addNewClusterClient" ref="formNewCusterClient">
 				<v-container>
 					<v-row v-for="(formData, i) in formDatas" :key="i">
 						<v-col cols="6">
 							<v-autocomplete
 								:label="`* Select Client ${i + 1}`"
-								:items="clients"
-								:item-text="(item) => (item.firstName + ' ' + item.middleInitial + ' ' + item.lastName).toUpperCase()"
+								:items="filteredData"
+								:item-text="(item) => $titleize(item.firstName + ' ' + item.middleInitial + ' ' + item.lastName)"
 								item-value="uuid"
 								prepend-inner-icon="mdi-account-plus"
 								clearable
-								@input="selectCLient"
-								return-object
 								:rules="[(v) => !!v || `Must have a client ${i + 1}`]"
 								v-model="formDatas[i].id"
 							>
@@ -60,16 +67,17 @@
 		props: {
 			addNewClusterClientToggle: Boolean,
 			clients: Array,
-			alert: Object,
 			id: String,
 		},
 		data() {
 			return {
 				loading: false,
+				filteredData: [],
 				data: {},
-				selectCLient: [],
 				elementCounts: 1,
 				toggleNone: null,
+				errors: [],
+				isSelectedClientExists: false,
 				formDatas: [
 					{
 						id: '',
@@ -82,33 +90,39 @@
 		components: {
 			Dialog,
 		},
+		created() {
+			this.filteredData = this.clients || []
+		},
 
 		methods: {
-			...mapActions({ GP2_INSERT_CLUSTER_CLIENT: 'gp2/GP2_INSERT_CLUSTER_CLIENT' }),
-			test: function(client) {
-				console.log(client)
-			},
+			...mapActions({
+				GP2_INSERT_CLUSTER_CLIENT: 'gp2/GP2_INSERT_CLUSTER_CLIENT',
+			}),
+
 			resetForm: function() {
 				this.$emit('close-new-cluster-client-toggle')
 				this.$refs.formNewCusterClient.reset()
 				this.formDatas = [{ id: '', loanAmount: '' }]
+				this.errors = []
 			},
 			addNewClusterClient: function() {
 				if (this.$refs.formNewCusterClient.validate()) {
 					this.loading = true
-					this.GP2_INSERT_CLUSTER_CLIENT({ formData: this.formDatas, clusterId: this.id })
+
+					this.GP2_INSERT_CLUSTER_CLIENT({
+						formData: this.formDatas,
+						clusterId: this.id,
+					})
 						.then(({ data }) => {
 							this.loading = false
 							this.$emit('append-cluster-client', { ...data.msg, id: this.id })
-
-							this.alert.type = 'success'
-
-							this.alert.body = this.resetForm()
+							this.$toasted.success('Client(s) added!', { icon: 'check' })
+							this.resetForm()
 						})
 						.catch((error) => {
 							console.log(error)
 							this.loading = false
-							this.$toast.error(error.response.data.error)
+							this.errors = error.response.data.error
 						})
 				}
 			},

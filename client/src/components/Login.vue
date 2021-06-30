@@ -3,7 +3,7 @@
 		<v-container fluid fill-height>
 			<v-layout align-center justify-center>
 				<v-flex xs12 sm8 md4>
-					<v-card class="elevation-12 pa-3">
+					<v-card class="elevation-10 pa-3">
 						<v-card-title>
 							<h3 justify-center>Login</h3>
 						</v-card-title>
@@ -33,13 +33,13 @@
 									:rules="[(v) => !!v || 'This password is required']"
 									type="password"
 								></v-text-field>
-								<v-card-actions>
-									<v-spacer></v-spacer>
-									<v-btn color="primary" type="submit" :loading="loading">Login</v-btn>
-									<v-btn to="/register">Register</v-btn>
-								</v-card-actions>
 							</v-form>
 						</v-card-text>
+						<v-card-actions>
+							<v-spacer></v-spacer>
+							<v-btn color="primary" @click="login" :loading="loading">Login</v-btn>
+							<v-btn to="/register">Register</v-btn>
+						</v-card-actions>
 					</v-card>
 				</v-flex>
 			</v-layout>
@@ -71,7 +71,7 @@
 					try {
 						const response = await this.AUTH_LOG_IN(this.loginForm)
 						api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`
-						this.$toast.success('Login Success!')
+						this.$toasted.success('Login Success!', { icon: 'check' })
 						this.$store.commit('auth/AUTH_SET_USER', response.data.user)
 						this.$router.push('/')
 						this.loading = false

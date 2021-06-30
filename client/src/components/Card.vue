@@ -1,9 +1,7 @@
 <template>
 	<div>
-		<Alert :alertType="alertType" :body="body" />
-
-		<v-card :loading="loading" outlined>
-			<v-card-title class="display-6 font-weight-Light   text-uppercase">
+		<v-card :loading="loading" shaped elevation="10">
+			<v-card-title class="text-h5 font-weight-medium">
 				<v-row no-gutter>
 					<v-col cols="6">
 						<slot name="card-title"></slot>
@@ -22,11 +20,7 @@
 </template>
 
 <script>
-	import Alert from './Dialogs/Alert.vue'
 	export default {
-		props: ['loading', 'alertType', 'body'],
-		components: {
-			Alert,
-		},
+		props: ['loading'],
 	}
 </script>

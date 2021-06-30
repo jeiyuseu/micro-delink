@@ -3,19 +3,11 @@
 		<v-container fluid fill-height>
 			<v-layout align-center justify-center>
 				<v-flex xs12 sm8 md4>
-					<v-card class="elevation-12 pa-3">
+					<v-card class="elevation-10 pa-3">
 						<v-card-title>
 							<h3 justify-center>Register</h3>
 						</v-card-title>
-						<v-alert
-							dense
-							:value="!!error"
-							transition="scale-transition"
-							v-for="(error, i) in errors"
-							:key="i"
-							text
-							type="error"
-						>
+						<v-alert dense :value="!!error" transition="scale-transition" v-for="(error, i) in errors" :key="i" text type="error">
 							{{ error.message }}
 						</v-alert>
 						<v-card-text>
@@ -45,10 +37,7 @@
 											name="password"
 											label="Password"
 											required
-											:rules="[
-												(v) => !!v || 'Password is required',
-												(v) => v.length >= 6 || 'Minimum of 6 characters!',
-											]"
+											:rules="[(v) => !!v || 'Password is required', (v) => v.length >= 6 || 'Minimum of 6 characters!']"
 											type="password"
 											tabindex="5"
 										></v-text-field>
@@ -69,10 +58,7 @@
 											name="username"
 											label="Username"
 											required
-											:rules="[
-												(v) => !!v || 'Username is required',
-												(v) => v.length >= 4 || 'Minimum of 4 characters',
-											]"
+											:rules="[(v) => !!v || 'Username is required', (v) => v.length >= 4 || 'Minimum of 4 characters']"
 											type="text"
 											tabindex="4"
 										></v-text-field>
@@ -87,12 +73,12 @@
 										></v-text-field>
 									</v-col>
 								</v-row>
-								<v-card-actions class="justify-end">
-									<v-btn color="primary" type="submit" :loading="loading">Register</v-btn>
-									<v-btn to="/login">Login</v-btn>
-								</v-card-actions>
 							</v-form>
 						</v-card-text>
+						<v-card-actions class="justify-end">
+							<v-btn color="primary" @click="register" :loading="loading">Register</v-btn>
+							<v-btn to="/login">Login</v-btn>
+						</v-card-actions>
 					</v-card>
 				</v-flex>
 			</v-layout>
@@ -133,13 +119,13 @@
 					this.post(this.registerForm)
 						.then(() => {
 							this.loading = false
-							this.$toast.success('User created successfully!')
+							this.$toasted.success('User created successfully!', { icon: 'check' })
 							this.$refs.formRegister.reset()
 							this.$router.push('/login')
 						})
 						.catch((error) => {
 							this.loading = false
-							this.$toast.error('Something went wrong...')
+							this.$toasted.error('Something went wrong...', { icon: 'close' })
 							console.log(error)
 						})
 				}

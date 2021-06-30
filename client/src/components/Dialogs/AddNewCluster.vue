@@ -116,7 +116,6 @@
 	export default {
 		props: {
 			addNewClusterToggle: Boolean,
-			alert: Object,
 		},
 		data() {
 			return {
@@ -153,20 +152,17 @@
 			addNewCluster: function() {
 				if (this.$refs.formData.validate()) {
 					this.loading = true
-					this.alert.body = ''
 					this.GP2_INSERT_CLUSTER(this.formData)
 						.then(({ data }) => {
 							this.loading = false
 							this.$emit('new-cluster', data.msg)
-							this.alert.type = 'success'
-							this.alert.body = data.msg.codeNameId.toUpperCase() + ' added successfully!'
+							this.$toasted.success(data.msg.codeNameId.toUpperCase() + ' is added!', { icon: 'check' })
 							this.onClose()
 						})
 						.catch((error) => {
-							this.loading = false
-							this.alert.type = 'error'
-							this.alert.body = error.response.data.error
 							console.log(error)
+							this.loading = false
+							this.$toasted.error('Something went wrong...', { icon: 'close' })
 						})
 				}
 			},

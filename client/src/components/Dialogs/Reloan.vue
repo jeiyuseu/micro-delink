@@ -3,7 +3,7 @@
 		<Dialog :modal="reloanToggle" :width="'700px'">
 			<div slot="modal-title">
 				Reloan |
-				<span class="font-weight-bold text-uppercase">{{ Object.keys(reloanInfo).length === 0 || fullName }}</span>
+				<span class="font-weight-bold">{{ Object.keys(reloanInfo).length === 0 || $titleize(fullName) }}</span>
 			</div>
 			<div slot="modal-text">
 				<v-form @submit.prevent="reloan" ref="formReloan">
@@ -47,7 +47,6 @@
 			reloanToggle: Boolean,
 			reloanInfo: Object,
 			items: Object,
-			alert: Object,
 		},
 		data() {
 			return {
@@ -61,7 +60,7 @@
 				},
 			},
 			fullName: function() {
-				return (this.reloanInfo.clientInfo.firstName + ' ' + this.reloanInfo.clientInfo.middleInitial + ' ' + this.reloanInfo.clientInfo.lastName).toUpperCase()
+				return this.reloanInfo.clientInfo.firstName + ' ' + this.reloanInfo.clientInfo.middleInitial + ' ' + this.reloanInfo.clientInfo.lastName
 			},
 		},
 		methods: {
@@ -70,7 +69,6 @@
 				if (this.$refs.formReloan.validate()) {
 					this.loading = true
 					const { uuid, loanAmount } = this.formData
-					this.alert.body = ''
 					this.GP2_RELOAN({ uuid, loanAmount })
 						.then(({ data }) => {
 							for (const key in data.msg.totals) {
@@ -83,15 +81,13 @@
 
 							this.$emit('close-reloan')
 							this.$emit('refresh-reloan-clients', data.msg.infoId)
-							this.alert.type = 'success'
-							this.alert.body = this.fullName + ' reloan successfully!'
+							this.$toasted.success(this.$titleize(this.fullName) + ' reloaned successfully!', { icon: 'check' })
 							this.loading = false
 						})
 						.catch((error) => {
-							this.loading = false
-							this.alert.type = 'error'
-							this.alert.body = error.response.data.error
 							console.log(error)
+							this.loading = false
+							this.$toasted.error('Something went wrong...', { icon: 'close' })
 						})
 				}
 			},

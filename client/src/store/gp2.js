@@ -79,7 +79,63 @@ export default {
 			const { codename } = routes.currentRoute.params
 			return new Promise((resolve, reject) => {
 				api
-					.patch(`gp2/${codename}/${uuid}/update`, { installment, sk, penalty, userId: rootGetters['auth/AUTH_GETT_USER'] })
+					.patch(`gp2/${codename}/${uuid}/update-client`, {
+						installment,
+						sk,
+						penalty,
+						userId: rootGetters['auth/AUTH_GETT_USER'].uuid,
+					})
+					.then((response) => {
+						resolve(response)
+					})
+					.catch((error) => {
+						reject(error)
+					})
+			})
+		},
+		GP2_EDIT_CLIENT: ({ rootGetters }, payload) => {
+			//future update
+			//change client when editing
+			const { uuid, lr, skCum, wi, pastDue } = payload
+			const { codename } = routes.currentRoute.params
+			return new Promise((resolve, reject) => {
+				api
+					.patch(`gp2/${codename}/${uuid}/edit-client`, {
+						uuid,
+						lr,
+						wi,
+						skCum,
+						pastDue,
+						userId: rootGetters['auth/AUTH_GETT_USER'].uuid,
+					})
+					.then((response) => {
+						resolve(response)
+					})
+					.catch((error) => {
+						reject(error)
+					})
+			})
+		},
+		GP2_DELETE_CLIENT: ({ rootGetters }, payload) => {
+			const { uuid } = payload
+			const { codename } = routes.currentRoute.params
+			return new Promise((resolve, reject) => {
+				api
+					.delete(`gp2/${codename}/${uuid}/delete-client`)
+					.then((response) => {
+						resolve(response)
+					})
+					.catch((error) => {
+						reject(error)
+					})
+			})
+		},
+		GP2_DELETE_INFO: ({ rootGetters }, payload) => {
+			const { uuid } = payload
+			const { codename } = routes.currentRoute.params
+			return new Promise((resolve, reject) => {
+				api
+					.delete(`gp2/${codename}/${uuid}/delete-info`)
 					.then((response) => {
 						resolve(response)
 					})
@@ -115,11 +171,12 @@ export default {
 			})
 		},
 		GP2_GET_DATA_DETAILS: ({ commit }, payload) => {
+			const { codename, uuid } = payload
 			return new Promise((resolve, reject) => {
 				api
-					.get(`gp2/${payload.codename}/${payload.uuid}`)
+					.get(`gp2/${codename}/${uuid}`)
 					.then((response) => {
-						commit('GP2_SET_DATA_DETAILS', response.data.response)
+						commit('GP2_SET_DATA_DETAILS', response.data.msg)
 						resolve(response)
 					})
 					.catch((error) => {
@@ -127,10 +184,12 @@ export default {
 					})
 			})
 		},
-		GP2_UPDATE_DETAILS: ({ commit }, payload) => {
+		GP2_EDIT_DETAILS: ({ commit }, payload) => {
+			const { uuid, payment, sk, penalty } = payload
+			const { codename } = routes.currentRoute.params
 			return new Promise((resolve, reject) => {
 				api
-					.patch(`gp2/${payload.codename}/${payload.uuid}`, { ...payload })
+					.patch(`gp2/${codename}/${payload.uuid}/edit-details`, { uuid, payment, sk, penalty })
 					.then((response) => {
 						resolve(response)
 					})
@@ -157,7 +216,13 @@ export default {
 			const { codename } = routes.currentRoute.params
 			return new Promise((resolve, reject) => {
 				api
-					.patch(`gp2/${codename}/${uuid}/edit`, { codename: codeNameId, dateOfFirstPayment, dateOfLastPayment, dateOfReleased, weeksToPay })
+					.patch(`gp2/${codename}/${uuid}/edit-info`, {
+						codename: codeNameId,
+						dateOfFirstPayment,
+						dateOfLastPayment,
+						dateOfReleased,
+						weeksToPay,
+					})
 					.then((response) => {
 						resolve(response)
 					})

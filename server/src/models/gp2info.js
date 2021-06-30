@@ -9,9 +9,9 @@ module.exports = (sequelize, DataTypes) => {
 		 */
 		static associate({ Gp2Clients, Staffs, Gp2InfoCode }) {
 			// define association here
-			this.hasMany(Gp2Clients, { foreignKey: 'infoId', as: 'gp2Clients' })
+			this.hasMany(Gp2Clients, { foreignKey: 'infoId', as: 'gp2Clients', onDelete: 'CASCADE', hooks: true })
 			this.belongsTo(Staffs, { foreignKey: 'staffId', as: 'staffs' })
-			this.belongsTo(Gp2InfoCode, { foreignKey: 'gp2InfoCodeId', as: 'codename' })
+			this.belongsTo(Gp2InfoCode, { foreignKey: 'gp2InfoCodeId', as: 'codename', onDelete: 'CASCADE', hooks: true })
 		}
 		toJSON() {
 			return {

@@ -114,7 +114,6 @@
 		props: {
 			renewToggle: Boolean,
 			renewInfo: Object,
-			alert: Object,
 		},
 		data() {
 			return {
@@ -134,24 +133,29 @@
 			...mapActions({ GP2_RENEW: 'gp2/GP2_RENEW' }),
 			renew: function() {
 				if (this.$refs.formRenew.validate()) {
-					this.alert.body = ''
 					this.loading = true
 					const { dateOfFirstPayment, dateOfLastPayment, dateOfReleased, uuid, weeksToPay } = this.formData
-					this.GP2_RENEW({ dateOfFirstPayment, dateOfLastPayment, dateOfReleased, uuid, weeksToPay })
+					this.GP2_RENEW({
+						dateOfFirstPayment,
+						dateOfLastPayment,
+						dateOfReleased,
+						uuid,
+						weeksToPay,
+					})
 						.then(({ data }) => {
 							for (const key in data.msg) {
 								this.renewInfo[key] = data.msg[key]
 							}
-							this.alert.type = 'success'
-							this.alert.body = this.renewInfo.codeNameId.toUpperCase() + ' renewed successfully!'
+
+							this.$toasted.success(this.renewInfo.codeNameId.toUpperCase() + ' renewed successfully!', { icon: 'check' })
+							this.$emit('refresh-renew-clients', data.msg.uuid)
 							this.$emit('close-renew')
 							this.loading = false
 						})
 						.catch((error) => {
-							this.loading = false
-							this.alert.type = 'error'
-							this.alert.body = error.response.data.error
 							console.log(error)
+							this.loading = false
+							this.$toasted.error('Something went wrong...', { icon: 'close' })
 						})
 				}
 			},

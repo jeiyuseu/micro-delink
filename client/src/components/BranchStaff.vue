@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<card>
-			<div slot="card-title">Branch Staff | {{ data.branchName }}</div>
+			<div slot="card-title">Branch Staff | {{ $titleize(data.branchName) }}</div>
 			<div slot="card-text">
 				<custom-dialog :modal="dialog" :width="maxWidth">
 					<div slot="modal-title">
@@ -11,14 +11,12 @@
 				</custom-dialog>
 			</div>
 			<div slot="card-text">
-				<v-card-title>
-					<v-text-field v-model="search" append-icon="mdi-magnify" label="Search staffs..." single-line hide-details></v-text-field
-				></v-card-title>
-				<v-data-table :headers="headers" :items="data.staffs" :items-per-page="5" class="elevation-1">
+				<v-text-field class="elevation-4 mb-6" solo v-model="search" append-icon="mdi-magnify" label="Search staffs..." single-line hide-details></v-text-field>
+				<v-data-table :headers="headers" :items="data.staffs" :items-per-page="5" class="elevation-10 mb-6">
 					<template v-slot:item="{ item }">
 						<tr>
 							<td>
-								{{ (item.firstName + ' ' + item.lastName).toUpperCase() }}
+								{{ $titleize(item.firstName + ' ' + item.lastName) }}
 							</td>
 							<td>{{ item.codeName.toUpperCase() }}- GP2</td>
 							<td class="text-center ">
@@ -38,41 +36,41 @@
 </template>
 
 <script>
-import CustomDialog from '@/components/Dialogs/Dialog'
-import Card from '@/components/Card'
-export default {
-	props: {
-		data: Object,
-	},
-	data() {
-		return {
-			dialog: false,
-			maxWidth: '600px',
-			search: '',
-			headers: [
-				{
-					text: 'Name of Staff',
-					align: 'start',
-					sortable: false,
-				},
-				{
-					text: 'Codename',
-					align: 'start',
-					sortable: false,
-				},
-				{
-					text: 'Action',
-					align: 'center',
-					sortable: false,
-				},
-			],
-		}
-	},
-	components: {
-		Card,
-		CustomDialog,
-	},
-	methods: {},
-	computed: {},
-}
+	import CustomDialog from '@/components/Dialogs/Dialog'
+	import Card from '@/components/Card'
+	export default {
+		props: {
+			data: Object,
+		},
+		data() {
+			return {
+				dialog: false,
+				maxWidth: '600px',
+				search: '',
+				headers: [
+					{
+						text: 'Name of Staff',
+						align: 'start',
+						sortable: false,
+					},
+					{
+						text: 'Codename',
+						align: 'start',
+						sortable: false,
+					},
+					{
+						text: 'Action',
+						align: 'center',
+						sortable: false,
+					},
+				],
+			}
+		},
+		components: {
+			Card,
+			CustomDialog,
+		},
+		methods: {},
+		computed: {},
+	}
 </script>
