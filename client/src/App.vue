@@ -2,7 +2,7 @@
 	<v-app id="app">
 		<v-app-bar elevation="1" class="blue darken-4 " app fixed>
 			<v-app-bar-nav-icon color="white" v-if="AUTH_GETT_IS_AUTHENTICATED" @click="drawer = !drawer"></v-app-bar-nav-icon>
-			<v-toolbar-title class="overline font-weight-black text-uppercase white--text">Micro-Delink</v-toolbar-title>
+			<v-toolbar-title class="overline font-weight-black text-uppercase white--text">Goodlife Microlending Program 2 (GP2)</v-toolbar-title>
 			<v-spacer></v-spacer>
 		</v-app-bar>
 

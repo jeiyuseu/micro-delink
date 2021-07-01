@@ -51,7 +51,10 @@
 						</v-col>
 						<v-col cols="6">
 							<v-select
-								:items="[{ desc: '16 Weeks', value: 16 }]"
+								:items="[
+									{ desc: '18 Weeks', value: 18 },
+									{ desc: '24 Weeks', value: 24 },
+								]"
 								item-text="desc"
 								item-value="value"
 								prepend-inner-icon="mdi-view-week"
