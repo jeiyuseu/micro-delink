@@ -52,7 +52,10 @@
 							</v-col>
 							<v-col cols="6">
 								<v-select
-									:items="[{ desc: '16 Weeks', value: 16 }]"
+									:items="[
+										{ desc: '18 Weeks', value: 18 },
+										{ desc: '24 Weeks', value: 24 },
+									]"
 									item-text="desc"
 									item-value="value"
 									prepend-inner-icon="mdi-view-week"
@@ -138,9 +141,16 @@
 			...mapActions({ GP2_EDIT_INFO: 'gp2/GP2_EDIT_INFO' }),
 
 			loanTerm: function() {
-				if (this.formData.weeksToPay === 16) {
+				if (this.formData.weeksToPay === 18) {
 					const date = new Date(this.formData.dateOfFirstPayment)
-					date.setDate(date.getDate() + 112)
+					date.setDate(date.getDate() + 126)
+					const newMonth = '0' + (date.getMonth() + 1)
+					const newDate = '0' + date.getDate()
+					const newYear = date.getFullYear()
+					this.formData.dateOfLastPayment = newYear ? `${newYear}-${newMonth.slice(-2)}-${newDate.slice(-2)}` : ''
+				} else if (this.formData.weeksToPay === 24) {
+					const date = new Date(this.formData.dateOfFirstPayment)
+					date.setDate(date.getDate() + 168)
 					const newMonth = '0' + (date.getMonth() + 1)
 					const newDate = '0' + date.getDate()
 					const newYear = date.getFullYear()

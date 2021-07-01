@@ -220,7 +220,8 @@ module.exports = {
 			let totals
 			let response = {}
 			formData.forEach((value, index) => {
-				const lr = gp2info.weeksToPay === 18 ? value.loanAmount * 124.2 : value.loanAmount * 120
+				const lr = gp2info.weeksToPay === 18 ? (value.loanAmount * 124.2) / 100 : (value.loanAmount * 120) / 100
+
 				payload[index] = {
 					clientId: clients.map((value) => value.id)[index],
 					infoId: gp2info.id,
@@ -481,7 +482,7 @@ module.exports = {
 				where: { uuid },
 				include: [{ model: Gp2Info, as: 'gp2Info', attributes: ['weeksToPay', 'uuid'] }],
 			})
-			const lr = gp2clientsfind.gp2Info.weeksToPay === 18 ? loanAmount * 124.2 : loanAmount * 120
+			const lr = gp2clientsfind.gp2Info.weeksToPay === 18 ? (loanAmount * 124.2) / 100 : (loanAmount * 120) / 100
 
 			let payload = {
 				lr,

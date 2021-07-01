@@ -491,9 +491,11 @@
 						worksheet.getCell(`J${row5}`).value = 'Signature'
 
 						value.gp2Clients.forEach((client, index) => {
-							if (value.weeksToPay === 16) {
+							if (value.weeksToPay === 18) {
 								//16 weeks
-								colCum = client.loanAmount * 1.2 - client.lr
+								colCum = client.loanAmount * 124.2 - client.lr
+							} else {
+								colCum = client.loanAmount * 120 - client.lr
 							}
 
 							worksheet.mergeCells(`J${row6 + row6_spacing}:L${row6 + row6_spacing}`)

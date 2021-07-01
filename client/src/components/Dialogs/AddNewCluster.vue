@@ -143,9 +143,16 @@
 				this.$refs.formData.reset()
 			},
 			loanTerm: function() {
-				if (this.formData.weeksToPay === 16) {
+				if (this.formData.weeksToPay === 18) {
 					const date = new Date(this.formData.dateOfFirstPayment)
-					date.setDate(date.getDate() + 112)
+					date.setDate(date.getDate() + 126)
+					const newMonth = '0' + (date.getMonth() + 1)
+					const newDate = '0' + date.getDate()
+					const newYear = date.getFullYear()
+					this.formData.dateOfLastPayment = newYear ? `${newYear}-${newMonth.slice(-2)}-${newDate.slice(-2)}` : ''
+				} else if (this.formData.weeksToPay === 24) {
+					const date = new Date(this.formData.dateOfFirstPayment)
+					date.setDate(date.getDate() + 168)
 					const newMonth = '0' + (date.getMonth() + 1)
 					const newDate = '0' + date.getDate()
 					const newYear = date.getFullYear()
