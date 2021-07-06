@@ -519,7 +519,7 @@ export default {
 				worksheet.getColumn('I').width = '15'
 				worksheet.getColumn('L').width = '15'
 
-				let colCum
+				let colCum, totalColCum
 				let row3 = 3
 				let row4 = 4
 				let row5 = 5
@@ -560,7 +560,7 @@ export default {
 
 					worksheet.getCell(`B${row8 + row12_spacing_total}`).value = 'Total'
 					worksheet.mergeCells(`J${row8 + row12_spacing_total}:L${row8 + row12_spacing_total}`)
-	
+
 					worksheet.getRow(row5).style = {
 						font: { bold: true },
 						alignment: { horizontal: 'center' },
@@ -589,6 +589,7 @@ export default {
 							totalColCum = (value.totals.loanAmount * 124.2) / 100 - value.totals.lr
 						} else {
 							colCum = (client.loanAmount * 120) / 100 - client.lr
+							totalColCum = (value.totals.loanAmount * 120) / 100 - value.totals.lr
 						}
 
 						worksheet.mergeCells(`J${row6 + row6_spacing}:L${row6 + row6_spacing}`)
@@ -626,6 +627,7 @@ export default {
 					worksheet.getCell(`G${row8 + row12_spacing_total}`).value = value.totals.wi
 						? value.totals.wi.toLocaleString()
 						: '-'
+					worksheet.getCell(`H${row8 + row12_spacing_total}`).value = totalColCum ? totalColCum.toLocaleString() : '-'
 
 					row3 += value.gp2Clients.length + 6
 					row4 += value.gp2Clients.length + 6
@@ -666,147 +668,6 @@ export default {
 				this.printToggle = true
 				this.$toasted.error('Something went wrong...', { icon: 'close' })
 			}
-			// this.GP2_GET_DATA(this.$route.params.codename)
-			// 	.then(async (response) => {
-			// 		const workbook = new ExcelJS.Workbook()
-			// 		const worksheet = workbook.addWorksheet('My Sheet')
-			// 		const gp2Data = response.data
-
-			// 		let colCum
-			// 		let row3 = 3
-			// 		let row4 = 4
-			// 		let row5 = 5
-			// 		let row6 = 6
-			// 		let row6_spacing = 0
-			// 		let row8 = 8
-
-			// 		worksheet.getColumn('B').width = '25'
-			// 		worksheet.getColumn('D').width = '15'
-			// 		worksheet.getColumn('E').width = '13'
-			// 		worksheet.getColumn('F').width = '13'
-			// 		worksheet.getColumn('H').width = '13'
-			// 		worksheet.getColumn('I').width = '15'
-			// 		worksheet.getColumn('L').width = '15'
-
-			// 		gp2Data.gp2Info.forEach((data) => {
-			// 			worksheet.getCell(`B${row3}`).value = 'Codename:'
-			// 			worksheet.getCell(`B${row3}`).font = { bold: true }
-			// 			worksheet.getCell(`C${row3}`).value = data.id
-
-			// 			worksheet.getCell(`B${row4}`).value = 'Date of Released:'
-			// 			worksheet.getCell(`B${row4}`).font = { bold: true }
-
-			// 			worksheet.getCell(`C${row4}`).value = moment(data.dateOfReleased).format('MMMM DD, YYYY')
-
-			// 			worksheet.getCell(`E${row4}`).value = 'Date of First Payment:'
-			// 			worksheet.getCell(`E${row4}`).font = { bold: true }
-			// 			worksheet.getCell(`G${row4}`).value = moment(data.dateOfFirstPayment).format('MMMM DD, YYYY')
-
-			// 			worksheet.getCell(`E${row3}`).value = 'Loan Term:'
-			// 			worksheet.getCell(`E${row3}`).font = { bold: true }
-			// 			worksheet.getCell(`F${row3}`).value = data.weeksToPay
-
-			// 			worksheet.getCell(`I${row4}`).value = 'Date of Last Payment:'
-			// 			worksheet.getCell(`I${row4}`).font = { bold: true }
-			// 			worksheet.getCell(`K${row4}`).value = moment(data.dateOfLastPayment).format('MMMM DD, YYYY')
-
-			// 			worksheet.getCell(`I${row3}`).value = 'Date:'
-			// 			worksheet.getCell(`I${row3}`).font = { bold: true }
-			// 			worksheet.getCell(`J${row3}`).value = moment().format('MMMM DD, YYYY')
-
-			// 			worksheet.getRow(row8).style = {
-			// 				font: { bold: true },
-			// 				alignment: { horizontal: 'center' },
-			// 			}
-
-			// 			worksheet.getCell(`B${row8}`).value = 'Total'
-
-			// 			worksheet.getRow(row5).style = {
-			// 				font: { bold: true },
-			// 				alignment: { horizontal: 'center' },
-			// 			}
-
-			// 			worksheet.mergeCells(`C${row3}:D${row3}`)
-			// 			worksheet.mergeCells(`C${row4}:D${row4}`)
-			// 			worksheet.mergeCells(`G${row4}:H${row4}`)
-			// 			worksheet.mergeCells(`K${row4}:L${row4}`)
-			// 			worksheet.mergeCells(`J${row5}:L${row5}`)
-			// 			worksheet.mergeCells(`J${row8}:L${row8}`)
-
-			// 			worksheet.getCell(`B${row5}`).value = 'Clientname'
-			// 			worksheet.getCell(`C${row5}`).value = 'LR'
-			// 			worksheet.getCell(`D${row5}`).value = 'SK CUM'
-			// 			worksheet.getCell(`E${row5}`).value = 'Past Due'
-			// 			worksheet.getCell(`F${row5}`).value = 'Penalty'
-			// 			worksheet.getCell(`G${row5}`).value = 'WI'
-			// 			worksheet.getCell(`H${row5}`).value = 'COL CUM'
-			// 			worksheet.getCell(`I${row5}`).value = 'Week #'
-			// 			worksheet.getCell(`J${row5}`).value = 'Signature'
-
-			// 			data.gp2Clients.forEach((client, index) => {
-			// 				if (data.weeksToPay === 16) {
-			// 					//16 weeks
-			// 					colCum = client.loanAmount * 1.2 - client.lr
-			// 				}
-
-			// 				worksheet.mergeCells(`J${row6 + row6_spacing}:L${row6 + row6_spacing}`)
-			// 				worksheet.getRow(row6 + row6_spacing).style = {
-			// 					alignment: { horizontal: 'center' },
-			// 				}
-			// 				worksheet.getCell(`A${row6 + row6_spacing}`).value = index + 1 + '. '
-			// 				worksheet.getCell(`B${row6 + row6_spacing}`).value = (client.clientInfo.firstName + ' ' + client.clientInfo.middleInitial + ' ' + client.clientInfo.lastName).toUpperCase()
-			// 				worksheet.getCell(`C${row6 + row6_spacing}`).value = client.lr.toLocaleString()
-			// 				worksheet.getCell(`D${row6 + row6_spacing}`).value = client.skCum ? client.skCum.toLocaleString() : '-'
-			// 				worksheet.getCell(`E${row6 + row6_spacing}`).value = client.pastDue ? client.pastDue.toLocaleString() : '-'
-			// 				worksheet.getCell(`G${row6 + row6_spacing}`).value = client.wi ? client.wi.toLocaleString() : '-'
-			// 				worksheet.getCell(`H${row6 + row6_spacing}`).value = colCum ? colCum.toLocaleString() : '-'
-			// 				worksheet.getCell(`I${row6 + row6_spacing}`).value = data.dateOfFirstPayment ? moment().diff(data.dateOfFirstPayment, 'weeks') : '-'
-
-			// 				row6++
-			// 			})
-
-			// 			worksheet.getCell(`C${row8}`).value = data.totals.lr ? data.totals.lr.toLocaleString() : '-'
-			// 			worksheet.getCell(`D${row8}`).value = data.totals.skCum ? data.totals.skCum.toLocaleString() : '-'
-			// 			worksheet.getCell(`E${row8}`).value = data.totals.pastDue ? data.totals.pastDue.toLocaleString() : '-'
-			// 			worksheet.getCell(`G${row8}`).value = data.totals.wi ? data.totals.wi.toLocaleString() : '-'
-
-			// 			row3 += 7
-			// 			row4 += 7
-			// 			row5 += 7
-			// 			row8 += 7
-
-			// 			row6_spacing += 5
-			// 		})
-
-			// 		worksheet.columns.forEach((col) => {
-			// 			const cols = worksheet.getColumn(col.number)
-
-			// 			cols.eachCell((cell) => {
-			// 				cell.border = {
-			// 					top: { style: 'thin' },
-			// 					left: { style: 'thin' },
-			// 					bottom: { style: 'thin' },
-			// 					right: { style: 'thin' },
-			// 				}
-			// 			})
-			// 		})
-
-			// 		const data = await workbook.xlsx.writeBuffer()
-
-			// 		FileSaver.saveAs(
-			// 			new Blob([data], {
-			// 				type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-			// 			}),
-			// 			this.$route.params.codename + '-' + moment().unix()
-			// 		)
-			// this.btnExport = false
-
-			// })
-			// .catch((error) => {
-			// 	console.log(error)
-			// 	this.btnExport = false
-			// 	this.$toasted.error('Something went wrong...', { icon: 'close' })
-			// })
 		},
 	},
 	computed: {

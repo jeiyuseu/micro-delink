@@ -2,7 +2,7 @@
 	<div>
 		<Dialog :modal="editToggle" :width="'700px'">
 			<div slot="modal-title">
-				Edit Info {{formData.dateOfLastPayment}}
+				Edit Info
 			</div>
 			<div slot="modal-text">
 				<v-form @submit.prevent="editInfos" ref="formEditInfo">
@@ -140,22 +140,22 @@
 <script>
 import Dialog from './Dialog'
 import { mapActions } from 'vuex'
-import {EventBus} from '../../helpers/event-bus'
+import { EventBus } from '../../helpers/event-bus'
 export default {
 	props: {
 		editToggle: Boolean,
-		editInfo:Object
+		editInfo: Object,
 	},
 	data() {
 		return {
 			loading: false,
 			menuDateOfReleased: false,
 			menuFirstOfPayment: false,
-			formData:{}
+			formData: {},
 		}
 	},
-	created(){
-		EventBus.$on('editInfo',(item)=>{
+	created() {
+		EventBus.$on('editInfo', (item) => {
 			this.formData = Object.assign({}, item)
 		})
 	},
@@ -198,7 +198,7 @@ export default {
 			}
 		},
 	},
-	
+
 	components: {
 		Dialog,
 	},

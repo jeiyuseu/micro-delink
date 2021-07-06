@@ -1,4 +1,15 @@
-const { Gp2Info, Gp2Clients, Gp2Details, Branch, Staffs, Clients, Users, Gp2InfoCode, Op, sequelize } = require('../models')
+const {
+	Gp2Info,
+	Gp2Clients,
+	Gp2Details,
+	Branch,
+	Staffs,
+	Clients,
+	Users,
+	Gp2InfoCode,
+	Op,
+	sequelize,
+} = require('../models')
 
 module.exports = {
 	index: async (req, res) => {
@@ -22,7 +33,18 @@ module.exports = {
 							['gp2InfoCodeId', 'ASC'],
 						],
 						separate: true,
-						attributes: ['id', 'codeNameId', 'staffCodeNameId', 'uuid', 'weeksToPay', 'loanCycle', 'dateOfFirstPayment', 'dateOfReleased', 'dateOfLastPayment', 'isVirgin'],
+						attributes: [
+							'id',
+							'codeNameId',
+							'staffCodeNameId',
+							'uuid',
+							'weeksToPay',
+							'loanCycle',
+							'dateOfFirstPayment',
+							'dateOfReleased',
+							'dateOfLastPayment',
+							'isVirgin',
+						],
 						where: {
 							[Op.or]: [{ isVirgin: filter }, sequelize.where(sequelize.col('gp2Clients.lr'), filter1, 0)],
 						},
@@ -158,7 +180,10 @@ module.exports = {
 			const lr = gp2clients.lr - installment
 			const skCum = gp2clients.skCum + sk
 			await Gp2Info.update({ isVirgin: false }, { where: { uuid: gp2clients.gp2Info.uuid }, sideEffects: false })
-			let gp2clientsupdate = await Gp2Clients.update({ lr, skCum, updatedBy: userInfo.id }, { where: { uuid }, returning: true })
+			let gp2clientsupdate = await Gp2Clients.update(
+				{ lr, skCum, updatedBy: userInfo.id },
+				{ where: { uuid }, returning: true }
+			)
 
 			const gp2clientsall = await Gp2Clients.findAll({
 				where: { lr: { [Op.gt]: 0 } },
@@ -296,7 +321,10 @@ module.exports = {
 			//* change client when editing client =>'clientId'
 			const gp2client = await Gp2Clients.update(
 				{ lr, wi, skCum, pastDue, updatedBy: user.id },
-				{ where: { uuid }, returning: ['loanAmount', 'lr', 'pastDue', 'skCum', 'weeks', 'wi', 'updatedAt', 'updatedBy', 'infoId'] }
+				{
+					where: { uuid },
+					returning: ['loanAmount', 'lr', 'pastDue', 'skCum', 'weeks', 'wi', 'updatedAt', 'updatedBy', 'infoId'],
+				}
 			)
 			const gp2info = await Gp2Info.findOne({
 				where: { id: gp2client[1][0].infoId },
@@ -353,7 +381,10 @@ module.exports = {
 			})
 			await Gp2InfoCode.update({ name: codename }, { where: { uuid: gp2InfoFind.codename.uuid } })
 
-			await Gp2Info.update({ dateOfFirstPayment, dateOfLastPayment, dateOfReleased, weeksToPay }, { where: { uuid: gp2InfoFind.uuid }, sideEffects: false })
+			await Gp2Info.update(
+				{ dateOfFirstPayment, dateOfLastPayment, dateOfReleased, weeksToPay },
+				{ where: { uuid: gp2InfoFind.uuid }, sideEffects: false }
+			)
 			gp2InfoFind = await Gp2Info.findOne({
 				where: { uuid },
 
@@ -414,7 +445,9 @@ module.exports = {
 
 		try {
 			let [, gp2details] = await Gp2Details.update({ payment, sk, penalty }, { where: { uuid }, returning: true })
-			const gp2totals = await Gp2Details.findAll({ where: { [Op.and]: [{ gp2InfoId: gp2details[0].gp2InfoId, gp2ClientId: gp2details[0].gp2ClientId }] } })
+			const gp2totals = await Gp2Details.findAll({
+				where: { [Op.and]: [{ gp2InfoId: gp2details[0].gp2InfoId, gp2ClientId: gp2details[0].gp2ClientId }] },
+			})
 			const totals = {
 				payment: gp2totals.reduce((a, b) => {
 					return a + b.payment
