@@ -2,7 +2,7 @@
 	<div>
 		<Dialog :modal="editToggle" :width="'700px'">
 			<div slot="modal-title">
-				Edit Info
+				Edit Info {{formData.dateOfLastPayment}}
 			</div>
 			<div slot="modal-text">
 				<v-form @submit.prevent="editInfos" ref="formEditInfo">
@@ -22,7 +22,15 @@
 						</v-row>
 						<v-row>
 							<v-col cols="6">
-								<v-menu ref="dateOfReleased" v-model="menuDateOfReleased" :close-on-content-click="false" transition="scale-transition" offset-y max-width="290px" min-width="auto">
+								<v-menu
+									ref="dateOfReleased"
+									v-model="menuDateOfReleased"
+									:close-on-content-click="false"
+									transition="scale-transition"
+									offset-y
+									max-width="290px"
+									min-width="auto"
+								>
 									<template v-slot:activator="{ on, attrs }">
 										<v-text-field
 											v-model.trim="formData.dateOfReleased"
@@ -68,7 +76,15 @@
 						</v-row>
 						<v-row>
 							<v-col cols="6">
-								<v-menu ref="dateOfFirstPayment" v-model="menuFirstOfPayment" :close-on-content-click="false" transition="scale-transition" offset-y max-width="290px" min-width="auto">
+								<v-menu
+									ref="dateOfFirstPayment"
+									v-model="menuFirstOfPayment"
+									:close-on-content-click="false"
+									transition="scale-transition"
+									offset-y
+									max-width="290px"
+									min-width="auto"
+								>
 									<template v-slot:activator="{ on, attrs }">
 										<v-text-field
 											v-model.trim="formData.dateOfFirstPayment"
@@ -97,7 +113,13 @@
 								</v-menu>
 							</v-col>
 							<v-col cols="6">
-								<v-text-field v-model.trim="formData.dateOfLastPayment" label="* Date of Last Payment" autocomplete="off" prepend-inner-icon="mdi-calendar" readonly></v-text-field>
+								<v-text-field
+									v-model.trim="formData.dateOfLastPayment"
+									label="* Date of Last Payment"
+									autocomplete="off"
+									prepend-inner-icon="mdi-calendar"
+									readonly
+								></v-text-field>
 							</v-col>
 						</v-row>
 					</v-container>
@@ -116,69 +138,69 @@
 </template>
 
 <script>
-	import Dialog from './Dialog'
-	import { mapActions } from 'vuex'
-	export default {
-		props: {
-			editToggle: Boolean,
-			editInfo: Object,
-		},
-		data() {
-			return {
-				loading: false,
-				menuDateOfReleased: false,
-				menuFirstOfPayment: false,
+import Dialog from './Dialog'
+import { mapActions } from 'vuex'
+import {EventBus} from '../../helpers/event-bus'
+export default {
+	props: {
+		editToggle: Boolean,
+		editInfo:Object
+	},
+	data() {
+		return {
+			loading: false,
+			menuDateOfReleased: false,
+			menuFirstOfPayment: false,
+			formData:{}
+		}
+	},
+	created(){
+		EventBus.$on('editInfo',(item)=>{
+			this.formData = Object.assign({}, item)
+		})
+	},
+	methods: {
+		...mapActions({ GP2_EDIT_INFO: 'gp2/GP2_EDIT_INFO' }),
+		loanTerm: function() {
+			if (this.formData.weeksToPay === 18) {
+				const date = new Date(this.formData.dateOfFirstPayment)
+				date.setDate(date.getDate() + 126)
+				const newMonth = '0' + (date.getMonth() + 1)
+				const newDate = '0' + date.getDate()
+				const newYear = date.getFullYear()
+				this.formData.dateOfLastPayment = newYear ? `${newYear}-${newMonth.slice(-2)}-${newDate.slice(-2)}` : ''
+			} else if (this.formData.weeksToPay === 24) {
+				const date = new Date(this.formData.dateOfFirstPayment)
+				date.setDate(date.getDate() + 168)
+				const newMonth = '0' + (date.getMonth() + 1)
+				const newDate = '0' + date.getDate()
+				const newYear = date.getFullYear()
+				this.formData.dateOfLastPayment = newYear ? `${newYear}-${newMonth.slice(-2)}-${newDate.slice(-2)}` : ''
 			}
 		},
-		computed: {
-			formData: {
-				get: function() {
-					return Object.assign({}, this.editInfo)
-				},
-			},
+		editInfos: function() {
+			if (this.$refs.formEditInfo.validate()) {
+				this.loading = true
+				this.GP2_EDIT_INFO(this.formData)
+					.then(({ data }) => {
+						for (const key in data.msg) {
+							this.editInfo[key] = data.msg[key]
+						}
+						this.loading = false
+						this.$emit('close-edit-info')
+						this.$toasted.success(data.msg.codeNameId.toUpperCase() + ' is edited!', { icon: 'check' })
+					})
+					.catch((error) => {
+						console.log(error)
+						this.loading = false
+						this.$toasted.error('Something went wrong...', { icon: 'close' })
+					})
+			}
 		},
-		methods: {
-			...mapActions({ GP2_EDIT_INFO: 'gp2/GP2_EDIT_INFO' }),
-
-			loanTerm: function() {
-				if (this.formData.weeksToPay === 18) {
-					const date = new Date(this.formData.dateOfFirstPayment)
-					date.setDate(date.getDate() + 126)
-					const newMonth = '0' + (date.getMonth() + 1)
-					const newDate = '0' + date.getDate()
-					const newYear = date.getFullYear()
-					this.formData.dateOfLastPayment = newYear ? `${newYear}-${newMonth.slice(-2)}-${newDate.slice(-2)}` : ''
-				} else if (this.formData.weeksToPay === 24) {
-					const date = new Date(this.formData.dateOfFirstPayment)
-					date.setDate(date.getDate() + 168)
-					const newMonth = '0' + (date.getMonth() + 1)
-					const newDate = '0' + date.getDate()
-					const newYear = date.getFullYear()
-					this.formData.dateOfLastPayment = newYear ? `${newYear}-${newMonth.slice(-2)}-${newDate.slice(-2)}` : ''
-				}
-			},
-			editInfos: function() {
-				if (this.$refs.formEditInfo.validate()) {
-					this.loading = true
-					this.GP2_EDIT_INFO(this.formData)
-						.then(({ data }) => {
-							for (const key in data.msg) {
-								this.editInfo[key] = data.msg[key]
-							}
-							this.loading = false
-							this.$emit('close-edit-info')
-							this.$toasted.success(data.msg.codeNameId.toUpperCase() + ' is edited!', { icon: 'check' })
-						})
-						.catch((error) => {
-							console.log(error)
-							this.loading = false
-							this.$toasted.error('Something went wrong...', { icon: 'close' })
-						})
-				}
-			},
-		},
-		components: {
-			Dialog,
-		},
-	}
+	},
+	
+	components: {
+		Dialog,
+	},
+}
 </script>

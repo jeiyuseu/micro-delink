@@ -90,6 +90,7 @@
 	import Renew from '@/components/Dialogs/Renew'
 	import Reloan from '@/components/Dialogs/Reloan'
 	import { mapActions, mapGetters } from 'vuex'
+	import {EventBus} from '../helpers/event-bus'
 	export default {
 		mixins: [smoothReflow],
 		data() {
@@ -195,6 +196,7 @@
 			renewInfos: function(items) {
 				this.renewToggle = true
 				this.renewInfo = items
+				EventBus.$emit('renewInfo',items)
 			},
 			reloanInfos: function(client, items) {
 				this.reloanToggle = true

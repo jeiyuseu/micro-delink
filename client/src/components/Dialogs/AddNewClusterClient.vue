@@ -4,22 +4,24 @@
 			Add New Cluster Client
 			<v-btn-toggle v-model="toggleNone">
 				<v-btn
-					><v-icon color="primary darken-4" @click="formDatas.push({ id: '', loanAmount: '' })">
+					><v-icon color="primary darken-4" @click="addClientInput">
 						mdi-plus-thick
 					</v-icon></v-btn
 				>
 				<v-btn
-					><v-icon color="primary darken-4" @click="formDatas.pop()" :disabled="formDatas.length <= 1">
+					><v-icon color="primary darken-4" @click="revertClientInput" :disabled="formDatas.length <= 1">
 						mdi-minus-thick
 					</v-icon></v-btn
 				>
 			</v-btn-toggle>
 		</div>
 		<div slot="modal-text">
-			<v-alert dense :v-if="errors" v-for="(error, i) in errors" :key="i" type="error">{{ $titleize(error.split(':')[1]) }} </v-alert>
+			<v-alert dense :v-if="errors" v-for="(error, i) in errors" :key="i" type="error"
+				>{{ $titleize(error.split(':')[1]) }}
+			</v-alert>
 			<v-form @submit.prevent="addNewClusterClient" ref="formNewCusterClient">
 				<v-container>
-					<v-row v-for="(formData, i) in formDatas" :key="i">
+					<v-row v-for="(formData, i) in formDatas" :key="formData.id">
 						<v-col cols="6">
 							<v-autocomplete
 								:label="`* Select Client ${i + 1}`"
@@ -61,71 +63,76 @@
 </template>
 
 <script>
-	import Dialog from './Dialog.vue'
-	import { mapActions } from 'vuex'
-	export default {
-		props: {
-			addNewClusterClientToggle: Boolean,
-			clients: Array,
-			id: String,
+import Dialog from './Dialog.vue'
+import { mapActions } from 'vuex'
+export default {
+	props: {
+		addNewClusterClientToggle: Boolean,
+		clients: Array,
+		id: String,
+	},
+	data() {
+		return {
+			loading: false,
+			filteredData: [],
+			data: {},
+			elementCounts: 1,
+			toggleNone: null,
+			errors: [],
+			isSelectedClientExists: false,
+			formDatas: [
+				{
+					id: '',
+					loanAmount: '',
+				},
+			],
+		}
+	},
+
+	components: {
+		Dialog,
+	},
+	created() {
+		this.filteredData = this.clients || []
+	},
+
+	methods: {
+		...mapActions({
+			GP2_INSERT_CLUSTER_CLIENT: 'gp2/GP2_INSERT_CLUSTER_CLIENT',
+		}),
+		addClientInput: function() {
+			this.formDatas.push({ id: '', loanAmount: '' })
 		},
-		data() {
-			return {
-				loading: false,
-				filteredData: [],
-				data: {},
-				elementCounts: 1,
-				toggleNone: null,
-				errors: [],
-				isSelectedClientExists: false,
-				formDatas: [
-					{
-						id: '',
-						loanAmount: '',
-					},
-				],
+		revertClientInput: function() {
+			this.formDatas.pop()
+		},
+		resetForm: function() {
+			this.$emit('close-new-cluster-client-toggle')
+			this.$refs.formNewCusterClient.reset()
+			this.formDatas = [{ id: '', loanAmount: '' }]
+			this.errors = []
+		},
+		addNewClusterClient: function() {
+			if (this.$refs.formNewCusterClient.validate()) {
+				this.loading = true
+
+				this.GP2_INSERT_CLUSTER_CLIENT({
+					formData: this.formDatas,
+					clusterId: this.id,
+				})
+					.then(({ data }) => {
+						this.loading = false
+						this.$emit('append-cluster-client', { ...data.msg, id: this.id })
+						this.$toasted.success('Client(s) added!', { icon: 'check' })
+						this.resetForm()
+					})
+					.catch((error) => {
+						console.log(error)
+						this.loading = false
+						this.errors = error.response.data.error
+					})
 			}
 		},
-
-		components: {
-			Dialog,
-		},
-		created() {
-			this.filteredData = this.clients || []
-		},
-
-		methods: {
-			...mapActions({
-				GP2_INSERT_CLUSTER_CLIENT: 'gp2/GP2_INSERT_CLUSTER_CLIENT',
-			}),
-
-			resetForm: function() {
-				this.$emit('close-new-cluster-client-toggle')
-				this.$refs.formNewCusterClient.reset()
-				this.formDatas = [{ id: '', loanAmount: '' }]
-				this.errors = []
-			},
-			addNewClusterClient: function() {
-				if (this.$refs.formNewCusterClient.validate()) {
-					this.loading = true
-
-					this.GP2_INSERT_CLUSTER_CLIENT({
-						formData: this.formDatas,
-						clusterId: this.id,
-					})
-						.then(({ data }) => {
-							this.loading = false
-							this.$emit('append-cluster-client', { ...data.msg, id: this.id })
-							this.$toasted.success('Client(s) added!', { icon: 'check' })
-							this.resetForm()
-						})
-						.catch((error) => {
-							console.log(error)
-							this.loading = false
-							this.errors = error.response.data.error
-						})
-				}
-			},
-		},
-	}
+	},
+}
 </script>

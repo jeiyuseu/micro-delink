@@ -14,6 +14,8 @@ import './plugins/titleize'
 import store from '@/store'
 import { sync } from 'vuex-router-sync'
 
+export const EventBus = new Vue()
+
 sync(store, router)
 Vue.config.productionTip = false
 

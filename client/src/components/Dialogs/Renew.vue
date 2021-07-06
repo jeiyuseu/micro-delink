@@ -113,24 +113,24 @@
 <script>
 	import Dialog from './Dialog'
 	import { mapActions } from 'vuex'
+	import {EventBus} from '../../helpers/event-bus'
 	export default {
 		props: {
 			renewToggle: Boolean,
-			renewInfo: Object,
+			renewInfo:Object
 		},
 		data() {
 			return {
 				menuFirstOfPayment: false,
 				menuDateOfReleased: false,
 				loading: false,
+				formData:{}
 			}
 		},
-		computed: {
-			formData: {
-				get() {
-					return Object.assign({}, this.renewInfo)
-				},
-			},
+		created(){
+			EventBus.$on('renewInfo',(item)=>{
+				this.formData = Object.assign({}, item)
+			})
 		},
 		methods: {
 			...mapActions({ GP2_RENEW: 'gp2/GP2_RENEW' }),
