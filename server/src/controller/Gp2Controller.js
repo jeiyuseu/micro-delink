@@ -62,6 +62,9 @@ module.exports = {
 				gp2Info[i1] = {
 					...array[i1].toJSON(),
 					totals: {
+						loanAmount: client.gp2Clients.reduce((a, b) => {
+							return a + b.loanAmount
+						}, 0),
 						lr: client.gp2Clients.reduce((a, b) => {
 							return a + b.lr
 						}, 0),
