@@ -13,7 +13,7 @@ require('dotenv').config()
 
 app.use(cookieParser())
 app.use(morgan('dev'))
-app.use(cors({ credentials: true, origin: 'http://localhost:8080' }))
+app.use(cors({ credentials: true, origin: 'http://localhost:8081' }))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(express.static(__dirname + '/public'))

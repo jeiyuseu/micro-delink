@@ -198,6 +198,9 @@ module.exports = {
 			})
 
 			const totals = {
+				loanAmount: gp2clientsall.reduce((a, b) => {
+					return a + b.loanAmount
+				}, 0),
 				lr: gp2clientsall.reduce((a, b) => {
 					return a + b.lr
 				}, 0),
@@ -285,6 +288,9 @@ module.exports = {
 			})
 
 			totals = {
+				loanAmount: gp2info.gp2Clients.reduce((a, b) => {
+					return a + b.loanAmount
+				}, 0),
 				lr: gp2info.gp2Clients.reduce((a, b) => {
 					return a + b.lr
 				}, 0),
@@ -342,6 +348,9 @@ module.exports = {
 					...value.toJSON(),
 					userInfo: user,
 					totals: {
+						loanAmount: gp2info.gp2Clients.reduce((a, b) => {
+							return a + b.loanAmount
+						}, 0),
 						lr: gp2info.gp2Clients.reduce((a, b) => {
 							return a + b.lr
 						}, 0),
@@ -541,6 +550,9 @@ module.exports = {
 				],
 			})
 			const totals = {
+				loanAmount: gp2clientsall.reduce((a, b) => {
+					return a + b.loanAmount
+				}, 0),
 				lr: gp2clientsall.reduce((a, b) => {
 					return a + b.lr
 				}, 0),
@@ -619,6 +631,9 @@ module.exports = {
 			const msg = {
 				...info,
 				totals: {
+					loanAmount: gp2clientsall.reduce((a, b) => {
+						return a + b.loanAmount
+					}, 0),
 					lr: gp2clientsall.reduce((a, b) => {
 						return a + b.lr
 					}, 0),
