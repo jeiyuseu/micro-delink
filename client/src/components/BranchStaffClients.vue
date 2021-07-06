@@ -586,6 +586,7 @@ export default {
 						if (value.weeksToPay === 18) {
 							//16 weeks
 							colCum = (client.loanAmount * 124.2) / 100 - client.lr
+							totalColCum = (value.totals.loanAmount * 124.2) / 100 - value.totals.lr
 						} else {
 							colCum = (client.loanAmount * 120) / 100 - client.lr
 						}
