@@ -1,16 +1,16 @@
 'use strict'
 const { Model } = require('sequelize')
 module.exports = (sequelize, DataTypes) => {
-	class gp2Details extends Model {
+	class gpDetails extends Model {
 		/**
 		 * Helper method for defining associations.
 		 * This method is not a part of Sequelize lifecycle.
 		 * The `models/index` file will call this method automatically.
 		 */
-		static associate({ Gp2Clients }) {
-			this.belongsTo(Gp2Clients, {
-				foreignKey: 'gp2ClientId',
-				as: 'gp2Clients',
+		static associate({ GpClients }) {
+			this.belongsTo(GpClients, {
+				foreignKey: 'gpClientId',
+				as: 'gpClients',
 			})
 		}
 		toJSON() {
@@ -22,13 +22,13 @@ module.exports = (sequelize, DataTypes) => {
 		}
 	}
 
-	gp2Details.init(
+	gpDetails.init(
 		{
 			uuid: {
 				type: DataTypes.UUID,
 				defaultValue: DataTypes.UUIDV4,
 			},
-			gp2InfoId: {
+			gpInfoId: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
 			},
@@ -36,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.INTEGER,
 				allowNull: false,
 			},
-			gp2ClientId: {
+			gpClientId: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
 			},
@@ -55,9 +55,9 @@ module.exports = (sequelize, DataTypes) => {
 		},
 		{
 			sequelize,
-			modelName: 'Gp2Details',
-			tableName: 'gp2Details',
+			modelName: 'GpDetails',
+			tableName: 'gpDetails',
 		}
 	)
-	return gp2Details
+	return gpDetails
 }

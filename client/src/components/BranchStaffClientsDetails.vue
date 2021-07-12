@@ -3,7 +3,14 @@
 		<Card>
 			<div slot="card-title">Branch Staff Clients Details</div>
 			<div slot="card-text">
-				<v-data-table hide-default-footer :headers="headers" :items="[...filteredData]" :items-per-page="5" class="elevation-10 mb-6" :search="search">
+				<v-data-table
+					hide-default-footer
+					:headers="headers"
+					:items="[...filteredData]"
+					:items-per-page="5"
+					class="elevation-10 mb-6"
+					:search="search"
+				>
 					<template v-slot:item="{ item, headers }">
 						<tr v-for="detail in item.details" :key="detail.uuid">
 							<td>{{ formatDate(detail.createdAt) }}</td>
@@ -49,69 +56,69 @@
 </template>
 
 <script>
-	import Card from '@/components/Card'
-	import EditClientPaymentDetails from '@/components/Dialogs/EditClientPaymentDetails'
-	import moment from 'moment'
-	import { mapActions, mapGetters } from 'vuex'
+import Card from '@/components/Card'
+import EditClientPaymentDetails from '@/components/Dialogs/EditClientPaymentDetails'
+import moment from 'moment'
+import { mapActions, mapGetters } from 'vuex'
 
-	export default {
-		data() {
-			return {
-				editClientPaymentToggle: false,
-				search: '',
-				detailsInfo: {},
-				filteredData: [],
-				headers: [
-					{
-						text: 'Payment Date Created',
-					},
-					{
-						text: 'Actual Payment',
-					},
-					{
-						text: 'SK',
-					},
-					{
-						text: 'Penalty',
-					},
-					{
-						text: 'Payment Date Updated',
-					},
-					{
-						text: 'Action',
-					},
-				],
-			}
-		},
-		created() {
-			this.filteredData = this.GP2_GETT_DATA_DETAILS || []
-		},
+export default {
+	data() {
+		return {
+			editClientPaymentToggle: false,
+			search: '',
+			detailsInfo: {},
+			filteredData: [],
+			headers: [
+				{
+					text: 'Payment Date Created',
+				},
+				{
+					text: 'Actual Payment',
+				},
+				{
+					text: 'SK',
+				},
+				{
+					text: 'Penalty',
+				},
+				{
+					text: 'Payment Date Updated',
+				},
+				{
+					text: 'Action',
+				},
+			],
+		}
+	},
+	created() {
+		this.filteredData = this.GP_GETT_DATA_DETAILS || []
+	},
 
-		methods: {
-			dialogEditDetails: function(details) {
-				this.editClientPaymentToggle = true
-				this.detailsInfo = details
-			},
-			refreshClientDetails: function(data) {
-				this.filteredData.details.forEach((value) => {
-					if (value.uuid === data.msg.uuid) {
-						for (const key in data.msg) {
-							value[key] = data.msg[key]
-						}
+	methods: {
+		dialogEditDetails: function(details) {
+			this.editClientPaymentToggle = true
+			this.detailsInfo = details
+		},
+		refreshClientDetails: function(data) {
+			this.filteredData.details.forEach((value) => {
+				if (value.uuid === data.msg.uuid) {
+					for (const key in data.msg) {
+						value[key] = data.msg[key]
 					}
-					this.filteredData.totals = data.msg.totals
-				})
-			},
-			formatDate(date) {
-				return moment(date).format('MMMM DD, YYYY')
-			},
+				}
+				this.filteredData.totals = data.msg.totals
+			})
 		},
-		computed: {
-			...mapGetters({ GP2_GETT_DATA_DETAILS: 'gp2/GP2_GETT_DATA_DETAILS' }),
+		formatDate(date) {
+			return moment(date).format('MMMM DD, YYYY')
 		},
-		components: {
-			Card,
-			EditClientPaymentDetails,
-		},
-	}
+	},
+	computed: {
+		...mapGetters({ GP_GETT_DATA_DETAILS: 'gp/GP_GETT_DATA_DETAILS' }),
+	},
+	components: {
+		Card,
+		EditClientPaymentDetails,
+	},
+}
 </script>

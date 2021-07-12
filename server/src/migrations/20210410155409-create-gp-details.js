@@ -1,7 +1,7 @@
 'use strict'
 module.exports = {
 	up: async (queryInterface, DataTypes) => {
-		await queryInterface.createTable('gp2Clients', {
+		await queryInterface.createTable('gpDetails', {
 			id: {
 				allowNull: false,
 				autoIncrement: true,
@@ -11,46 +11,35 @@ module.exports = {
 			uuid: {
 				type: DataTypes.UUID,
 				allowNull: false,
-				unique: true, // useful for bulkCreateUpdate
 			},
-			infoId: {
+			gpInfoId: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
 			},
-			clientId: {
-				type: DataTypes.INTEGER,
-				allowNull: false,
-				unique: true,
-			},
-			lr: {
+			branchId: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
 			},
-			weeks: {
-				type: DataTypes.STRING,
-				allowNull: false,
-			},
-			skCum: {
+			gpClientId: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
+				// onDelete: 'CASCADE',
+				// references: {
+				// 	model: 'gpClients',
+				// 	key: 'id',
+				// },
 			},
-			skCum: {
-				type: DataTypes.INTEGER,
-				allowNull: false,
-			},
-			wi: {
+			payment: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
 			},
-			pastDue: {
-				type: DataTypes.INTEGER,
-			},
-			loanAmount: {
+			sk: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
 			},
-			updatedBy: {
+			penalty: {
 				type: DataTypes.INTEGER,
+				allowNull: false,
 			},
 			createdAt: {
 				allowNull: false,
@@ -63,6 +52,6 @@ module.exports = {
 		})
 	},
 	down: async (queryInterface, DataTypes) => {
-		await queryInterface.dropTable('gp2Clients')
+		await queryInterface.dropTable('gpDetails')
 	},
 }

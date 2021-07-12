@@ -21,7 +21,15 @@
 					</v-row>
 					<v-row>
 						<v-col cols="6">
-							<v-menu ref="dateOfReleased" v-model="menuDateOfReleased" :close-on-content-click="false" transition="scale-transition" offset-y max-width="290px" min-width="auto">
+							<v-menu
+								ref="dateOfReleased"
+								v-model="menuDateOfReleased"
+								:close-on-content-click="false"
+								transition="scale-transition"
+								offset-y
+								max-width="290px"
+								min-width="auto"
+							>
 								<template v-slot:activator="{ on, attrs }">
 									<v-text-field
 										v-model.trim="formData.dateOfReleased"
@@ -67,7 +75,15 @@
 					</v-row>
 					<v-row>
 						<v-col cols="6">
-							<v-menu ref="dateOfFirstPayment" v-model="menuFirstOfPayment" :close-on-content-click="false" transition="scale-transition" offset-y max-width="290px" min-width="auto">
+							<v-menu
+								ref="dateOfFirstPayment"
+								v-model="menuFirstOfPayment"
+								:close-on-content-click="false"
+								transition="scale-transition"
+								offset-y
+								max-width="290px"
+								min-width="auto"
+							>
 								<template v-slot:activator="{ on, attrs }">
 									<v-text-field
 										v-model.trim="formData.dateOfFirstPayment"
@@ -96,17 +112,23 @@
 							</v-menu>
 						</v-col>
 						<v-col cols="6">
-							<v-text-field v-model.trim="formData.dateOfLastPayment" label="* Date of Last Payment" autocomplete="off" prepend-inner-icon="mdi-calendar" readonly></v-text-field>
+							<v-text-field
+								v-model.trim="formData.dateOfLastPayment"
+								label="* Date of Last Payment"
+								autocomplete="off"
+								prepend-inner-icon="mdi-calendar"
+								readonly
+							></v-text-field>
 						</v-col>
 					</v-row>
 				</v-container>
 			</v-form>
 		</div>
 		<div slot="modal-action">
-			<v-btn color="primary darken-1" text @click="onClose">
+			<v-btn color="primary darken-4" text @click="onClose">
 				Close
 			</v-btn>
-			<v-btn color="primary darken-2" class="font-weight-black" :loading="loading" @click="addNewCluster" text>
+			<v-btn color="primary darken-4" class="font-weight-black" :loading="loading" @click="addNewCluster" text>
 				Add
 			</v-btn>
 		</div>
@@ -114,71 +136,71 @@
 </template>
 
 <script>
-	import Dialog from './Dialog'
-	import { mapActions } from 'vuex'
-	export default {
-		props: {
-			addNewClusterToggle: Boolean,
+import Dialog from './Dialog'
+import { mapActions } from 'vuex'
+export default {
+	props: {
+		addNewClusterToggle: Boolean,
+	},
+	data() {
+		return {
+			loading: false,
+			errors: [],
+			menuDateOfReleased: false,
+			menuFirstOfPayment: false,
+			btnAdd: false,
+			formData: {
+				dateOfReleased: '',
+				dateOfFirstPayment: '',
+				dateOfLastPayment: '',
+				weeksToPay: '',
+				clusterCode: '',
+			},
+		}
+	},
+	methods: {
+		...mapActions({ GP_INSERT_CLUSTER: 'gp/GP_INSERT_CLUSTER' }),
+		onClose: function() {
+			this.$emit('close-new-cluster-toggle')
+			this.$refs.formData.reset()
 		},
-		data() {
-			return {
-				loading: false,
-				errors: [],
-				menuDateOfReleased: false,
-				menuFirstOfPayment: false,
-				btnAdd: false,
-				formData: {
-					dateOfReleased: '',
-					dateOfFirstPayment: '',
-					dateOfLastPayment: '',
-					weeksToPay: '',
-					clusterCode: '',
-				},
+		loanTerm: function() {
+			if (this.formData.weeksToPay === 18) {
+				const date = new Date(this.formData.dateOfFirstPayment)
+				date.setDate(date.getDate() + 126)
+				const newMonth = '0' + (date.getMonth() + 1)
+				const newDate = '0' + date.getDate()
+				const newYear = date.getFullYear()
+				this.formData.dateOfLastPayment = newYear ? `${newYear}-${newMonth.slice(-2)}-${newDate.slice(-2)}` : ''
+			} else if (this.formData.weeksToPay === 24) {
+				const date = new Date(this.formData.dateOfFirstPayment)
+				date.setDate(date.getDate() + 168)
+				const newMonth = '0' + (date.getMonth() + 1)
+				const newDate = '0' + date.getDate()
+				const newYear = date.getFullYear()
+				this.formData.dateOfLastPayment = newYear ? `${newYear}-${newMonth.slice(-2)}-${newDate.slice(-2)}` : ''
 			}
 		},
-		methods: {
-			...mapActions({ GP2_INSERT_CLUSTER: 'gp2/GP2_INSERT_CLUSTER' }),
-			onClose: function() {
-				this.$emit('close-new-cluster-toggle')
-				this.$refs.formData.reset()
-			},
-			loanTerm: function() {
-				if (this.formData.weeksToPay === 18) {
-					const date = new Date(this.formData.dateOfFirstPayment)
-					date.setDate(date.getDate() + 126)
-					const newMonth = '0' + (date.getMonth() + 1)
-					const newDate = '0' + date.getDate()
-					const newYear = date.getFullYear()
-					this.formData.dateOfLastPayment = newYear ? `${newYear}-${newMonth.slice(-2)}-${newDate.slice(-2)}` : ''
-				} else if (this.formData.weeksToPay === 24) {
-					const date = new Date(this.formData.dateOfFirstPayment)
-					date.setDate(date.getDate() + 168)
-					const newMonth = '0' + (date.getMonth() + 1)
-					const newDate = '0' + date.getDate()
-					const newYear = date.getFullYear()
-					this.formData.dateOfLastPayment = newYear ? `${newYear}-${newMonth.slice(-2)}-${newDate.slice(-2)}` : ''
-				}
-			},
-			addNewCluster: function() {
-				if (this.$refs.formData.validate()) {
-					this.loading = true
-					this.GP2_INSERT_CLUSTER(this.formData)
-						.then(({ data }) => {
-							this.loading = false
-							this.$emit('new-cluster', data.msg)
-							this.$toasted.success(data.msg.codeNameId.toUpperCase() + ' is added!', { icon: 'check' })
-							this.onClose()
-						})
-						.catch((error) => {
-							console.log(error)
-							this.loading = false
-							this.$toasted.error('Something went wrong...', { icon: 'close' })
-						})
-				}
-			},
+		addNewCluster: function() {
+			if (this.$refs.formData.validate()) {
+				this.loading = true
+				this.GP_INSERT_CLUSTER(this.formData)
+					.then(({ data }) => {
+						this.loading = false
+						this.$emit('new-cluster', data.msg)
+						this.$toasted.success(data.msg.codeNameId.toUpperCase() + ' is added!', { icon: 'check' })
+						this.onClose()
+					})
+					.catch((error) => {
+						console.log(error)
+						this.loading = false
+						this.$toasted.error('Something went wrong...', { icon: 'close' })
+					})
+			}
 		},
-		components: {
-			Dialog,
-		},
-	}
+	},
+	components: {
+		Dialog,
+	},
+}
 </script>

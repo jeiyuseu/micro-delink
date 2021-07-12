@@ -21,7 +21,7 @@
 			</v-alert>
 			<v-form @submit.prevent="addNewClusterClient" ref="formNewCusterClient">
 				<v-container>
-					<v-row v-for="(formData, i) in formDatas" :key="formData.id">
+					<v-row v-for="(formData, i) in formDatas" :key="i">
 						<v-col cols="6">
 							<v-autocomplete
 								:label="`* Select Client ${i + 1}`"
@@ -52,10 +52,10 @@
 			</v-form>
 		</div>
 		<div slot="modal-action">
-			<v-btn color="primary darken-1" text @click="resetForm">
+			<v-btn color="primary darken-4" text @click="resetForm">
 				Close
 			</v-btn>
-			<v-btn color="primary darken-2" class="font-weight-black" :loading="loading" @click="addNewClusterClient" text>
+			<v-btn color="primary darken-4" class="font-weight-black" :loading="loading" @click="addNewClusterClient" text>
 				Add
 			</v-btn>
 		</div>
@@ -69,7 +69,6 @@ export default {
 	props: {
 		addNewClusterClientToggle: Boolean,
 		clients: Array,
-		id: String,
 	},
 	data() {
 		return {
@@ -98,7 +97,7 @@ export default {
 
 	methods: {
 		...mapActions({
-			GP2_INSERT_CLUSTER_CLIENT: 'gp2/GP2_INSERT_CLUSTER_CLIENT',
+			GP_INSERT_CLUSTER_CLIENT: 'gp/GP_INSERT_CLUSTER_CLIENT',
 		}),
 		addClientInput: function() {
 			this.formDatas.push({ id: '', loanAmount: '' })
@@ -115,14 +114,10 @@ export default {
 		addNewClusterClient: function() {
 			if (this.$refs.formNewCusterClient.validate()) {
 				this.loading = true
-
-				this.GP2_INSERT_CLUSTER_CLIENT({
-					formData: this.formDatas,
-					clusterId: this.id,
-				})
+				this.GP_INSERT_CLUSTER_CLIENT(this.formDatas)
 					.then(({ data }) => {
 						this.loading = false
-						this.$emit('append-cluster-client', { ...data.msg, id: this.id })
+						this.$emit('append-cluster-client', data.msg)
 						this.$toasted.success('Client(s) added!', { icon: 'check' })
 						this.resetForm()
 					})

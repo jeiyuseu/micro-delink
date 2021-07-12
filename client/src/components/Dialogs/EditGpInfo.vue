@@ -126,10 +126,10 @@
 				</v-form>
 			</div>
 			<div slot="modal-action">
-				<v-btn color="primary darken-1" @click="$emit('close-edit-info')" text>
+				<v-btn color="primary darken-4" @click="$emit('close-edit-info')" text>
 					Close
 				</v-btn>
-				<v-btn color="primary darken-2" :loading="loading" class="font-weight-black" @click="editInfos" text>
+				<v-btn color="primary darken-4" :loading="loading" class="font-weight-black" @click="editInfos" text>
 					Edit
 				</v-btn>
 			</div>
@@ -160,7 +160,7 @@ export default {
 		})
 	},
 	methods: {
-		...mapActions({ GP2_EDIT_INFO: 'gp2/GP2_EDIT_INFO' }),
+		...mapActions({ GP_EDIT_INFO: 'gp/GP_EDIT_INFO' }),
 		loanTerm: function() {
 			if (this.formData.weeksToPay === 18) {
 				const date = new Date(this.formData.dateOfFirstPayment)
@@ -181,7 +181,7 @@ export default {
 		editInfos: function() {
 			if (this.$refs.formEditInfo.validate()) {
 				this.loading = true
-				this.GP2_EDIT_INFO(this.formData)
+				this.GP_EDIT_INFO(this.formData)
 					.then(({ data }) => {
 						for (const key in data.msg) {
 							this.editInfo[key] = data.msg[key]

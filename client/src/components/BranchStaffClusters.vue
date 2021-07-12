@@ -1,27 +1,30 @@
 <template>
 	<div>
 		<Card>
-			<div slot="card-title">Branch Staff Clients</div>
+			<div slot="card-title">
+				Cluster List
+			</div>
 			<div slot="card-text">
+				<v-alert v-if="selected.length !== 0" border="bottom" colored-border type="info" elevation="4"
+					>Selected :
+					<span
+						v-for="(select, i) in selected"
+						class="font-weight-medium text-uppercase text-decoration-underline"
+						:key="i"
+					>
+						<b class="mx-">{{ codeName.toUpperCase() }}-{{ select.codeNameId }}</b>
+					</span>
+				</v-alert>
 				<v-card class="elevation-5 mb-6">
 					<v-card-text>
 						<v-row>
 							<v-col cols="12">
-								<v-btn class="mr-3" outlined rounded color="blue" @click="addNewClusterToggle = true">
+								<v-btn class="mr-3" outlined rounded color="blue darken-4" @click="addNewClusterToggle = true">
 									<v-icon left dark> mdi-plus </v-icon>
 									Add New Cluster
 								</v-btn>
-								<v-btn
-									:to="`${$route.params.codename}/completed-accounts`"
-									outlined
-									rounded
-									color="success"
-									class="mr-3"
-								>
-									<v-icon left dark> mdi-check </v-icon>
-									Completed Accounts
-								</v-btn>
-								<v-btn v-if="printToggle" @click="printToggle = !printToggle" outlined rounded color="success">
+
+								<v-btn v-if="printToggle" @click="printToggle = !printToggle" outlined rounded color="success darken-4">
 									<v-icon left dark> mdi-file-excel </v-icon>
 									Select to Print
 								</v-btn>
@@ -31,7 +34,7 @@
 									:disabled="selected.length === 0"
 									outlined
 									rounded
-									color="success"
+									color="success darken-4"
 									v-if="!printToggle"
 								>
 									<v-icon left dark> mdi-check </v-icon>
@@ -41,13 +44,15 @@
 						</v-row>
 					</v-card-text>
 				</v-card>
+
 				<v-text-field
 					solo
 					class="elevation-4 mb-6"
 					v-model="search"
 					append-icon="mdi-magnify"
-					label="Search code #... E.G MA-TA1, MA-TB2, MA-TB3"
+					label="Search Code #, Name..."
 					single-line
+					clearable
 					hide-details
 				></v-text-field>
 				<v-data-table
@@ -57,22 +62,16 @@
 					:single-select="printToggle"
 					:show-select="!printToggle"
 					:expanded.sync="expanded"
-					:single-expand="false"
+					:single-expand="true"
 					item-key="uuid"
 					class="elevation-10 mb-6"
 				>
-					<template v-slot:item="{ item, expand, isExpanded, isSelected, select }">
-						<tr class="blue darken-4 white--text ">
+					<template v-slot:item="{ item, isSelected, select }">
+						<tr class="font-weight-bold">
 							<td v-if="!printToggle">
-								<v-simple-checkbox
-									color="white"
-									class=""
-									dark
-									:value="isSelected"
-									@input="select($event)"
-								></v-simple-checkbox>
+								<v-simple-checkbox :value="isSelected" @input="select($event)"></v-simple-checkbox>
 							</td>
-							<td class="font-weight-bold text-uppercase">
+							<td class="text-uppercase">
 								{{ item.staffCodeNameId + '-' + item.codeNameId }}
 							</td>
 							<td>{{ moment().diff(item.dateOfFirstPayment, 'weeks') }}</td>
@@ -88,26 +87,15 @@
 							<td class="text-center">
 								<v-tooltip bottom>
 									<template v-slot:activator="{ on, attrs }">
-										<v-icon
-											class="mr-3"
-											dark
-											v-bind="attrs"
-											v-on="on"
-											@click="expand((isExpanded = true)), (clusterId = item.uuid), (addNewClusterClientToggle = true)"
-											>mdi-plus</v-icon
+										<v-icon class="mr-3" color="blue darken-4" v-bind="attrs" v-on="on" @click="dialogEditInfo(item)"
+											>mdi-pencil</v-icon
 										>
-									</template>
-									<span>Add Clients</span>
-								</v-tooltip>
-								<v-tooltip bottom>
-									<template v-slot:activator="{ on, attrs }">
-										<v-icon class="mr-3" dark v-bind="attrs" v-on="on" @click="dialogEditInfo(item)">mdi-pencil</v-icon>
 									</template>
 									<span>Edit Details</span>
 								</v-tooltip>
 								<v-tooltip bottom>
 									<template v-slot:activator="{ on, attrs }">
-										<v-icon class="mr-3" dark v-bind="attrs" @click="dialogDeleteInfo(item)" v-on="on"
+										<v-icon class="mr-3" color="red darken-4" v-bind="attrs" @click="dialogDeleteInfo(item)" v-on="on"
 											>mdi-delete-circle</v-icon
 										>
 									</template>
@@ -115,138 +103,20 @@
 								</v-tooltip>
 								<v-tooltip bottom>
 									<template v-slot:activator="{ on, attrs }">
-										<v-icon class="mr-3" v-bind="attrs" v-on="on" dark @click="expand(!isExpanded)">
-											{{ isExpanded ? 'mdi-arrow-right' : 'mdi-arrow-down' }}</v-icon
-										>
-									</template>
-									<span> {{ isExpanded ? 'Hide Clients' : 'Show Clients' }}</span>
-								</v-tooltip>
-							</td>
-						</tr>
-					</template>
-
-					<template v-slot:expanded-item="{ item, headers }">
-						<tr class="grey lighten-3">
-							<th v-if="!printToggle"></th>
-							<th colspan="2">Client Name</th>
-							<th>LR</th>
-							<th>SK CUM</th>
-							<th>W.I</th>
-							<th>Past Due</th>
-							<th>Updated By</th>
-							<th class="text-center">Action</th>
-						</tr>
-
-						<tr v-for="(client, i) in item.gp2Clients" :key="client.uuid">
-							<td v-if="!printToggle"></td>
-							<td colspan="2" class="font-weight-bold">
-								{{ parseInt(i) + 1 }}.
-								{{
-									$titleize(
-										client.clientInfo.firstName +
-											' ' +
-											client.clientInfo.middleInitial +
-											' ' +
-											client.clientInfo.lastName
-									)
-								}}
-							</td>
-							<td>₱ {{ client.lr.toLocaleString() }}</td>
-							<td>₱ {{ client.skCum.toLocaleString() }}</td>
-							<td>₱ {{ client.wi.toLocaleString() }}</td>
-							<td>₱ {{ client.pastDue.toLocaleString() }}</td>
-							<td>
-								{{
-									client.userInfo === null ? '' : $titleize(client.userInfo.firstName + ' ' + client.userInfo.lastName)
-								}}
-								{{
-									client.userInfo === null
-										? ''
-										: moment(client.updatedAt).fromNow()
-										? ' | ' + moment(client.updatedAt).fromNow()
-										: ''
-								}}
-							</td>
-							<td class="text-center">
-								<v-tooltip bottom>
-									<template v-slot:activator="{ on, attrs }">
-										<v-icon
-											color="success"
-											v-bind="attrs"
-											v-on="on"
-											class="mr-2"
-											@click="dialogEditClient(client, item)"
-										>
-											mdi-pencil
-										</v-icon>
-									</template>
-									<span>Edit Client</span>
-								</v-tooltip>
-								<v-tooltip bottom>
-									<template v-slot:activator="{ on, attrs }">
-										<v-icon
-											color="warning"
-											v-bind="attrs"
-											v-on="on"
-											class="mr-2"
-											@click="dialogUpdateInfo(client, item)"
-										>
-											mdi-update
-										</v-icon>
-									</template>
-									<span>Update Payment</span>
-								</v-tooltip>
-
-								<v-tooltip bottom>
-									<template v-slot:activator="{ on, attrs }">
 										<v-btn
+											class="pr-3"
 											icon
-											color="info"
-											v-bind="attrs"
-											v-on="on"
-											:to="`${$route.params.codename}/${client.clientInfo.slug}.${client.clientInfo.uuid}`"
+											color="green darken-4"
+											:to="`${$route.params.codename}/${item.codeNameId}`"
 										>
-											<v-icon> mdi-eye </v-icon>
+											<v-icon v-on="on" right v-bind="attrs">
+												mdi-eye
+											</v-icon>
 										</v-btn>
 									</template>
-									<span>View Payment History</span>
-								</v-tooltip>
-								<v-tooltip bottom>
-									<template v-slot:activator="{ on, attrs }">
-										<v-btn icon color="error" v-bind="attrs" v-on="on" @click="dialogDeleteClient(client)">
-											<v-icon> mdi-delete </v-icon>
-										</v-btn>
-									</template>
-									<span>Delete</span>
+									<span>View Clients</span>
 								</v-tooltip>
 							</td>
-						</tr>
-						<tr v-if="item.gp2Clients.length === 0">
-							<td :colspan="headers.length" class="text-center">No clients!</td>
-						</tr>
-
-						<tr class="grey lighten-3 font-weight-bold" v-if="item.gp2Clients.length !== 0">
-							<td v-if="!printToggle"></td>
-							<td colspan="2" class="text-center">Total</td>
-							<td>
-								₱
-								{{ item.totals.lr.toLocaleString() }}
-							</td>
-							<td>
-								₱
-								{{ item.totals.skCum.toLocaleString() }}
-							</td>
-							<td>
-								₱
-								{{ item.totals.wi.toLocaleString() }}
-							</td>
-							<td>
-								₱
-								{{ item.totals.pastDue.toLocaleString() }}
-							</td>
-
-							<td></td>
-							<td></td>
 						</tr>
 					</template>
 				</v-data-table>
@@ -258,29 +128,7 @@
 			@close-new-cluster-toggle="addNewClusterToggle = false"
 			@new-cluster="(data) => filteredData.push(data)"
 		/>
-		<AddNewClusterClient
-			:addNewClusterClientToggle="addNewClusterClientToggle"
-			:clients="CLIENT_GETT_DATA_ALL.clients"
-			:id="clusterId"
-			@close-new-cluster-client-toggle="addNewClusterClientToggle = false"
-			@append-cluster-client="refreshClients"
-		/>
 		<EditInfo :editToggle="editToggle" :editInfo="editInfo" @close-edit-info="editToggle = false" />
-		<UpdateClient
-			:updateToggle="updateToggle"
-			:clientInfo="clientInfo"
-			:items="items"
-			@update-clients="refreshUpdateClients"
-			@close-update-client="updateToggle = false"
-		/>
-		<!-- future update, changing client when editing :clients="CLIENT_GETT_DATA_ALL.clients" -->
-		<EditClient
-			:editClusterClientToggle="editClusterClientToggle"
-			:items="items"
-			:clientInfo="editClientInfo"
-			@refresh-update-clients="refreshUpdateClients"
-			@close-edit-client="editClusterClientToggle = false"
-		/>
 		<DeleteDialog
 			:dialogDeleteToggle="dialogDeleteToggle"
 			:loading="loading"
@@ -293,10 +141,7 @@
 <script>
 import smoothReflow from 'vue-smooth-reflow'
 import AddNewCluster from '@/components/Dialogs/AddNewCluster'
-import AddNewClusterClient from '@/components/Dialogs/AddNewClusterClient'
-import EditInfo from '@/components/Dialogs/EditGp2Info'
-import UpdateClient from '@/components/Dialogs/UpdateGp2Client'
-import EditClient from '@/components/Dialogs/EditClusterClient'
+import EditInfo from '@/components/Dialogs/EditGpInfo'
 import DeleteDialog from '@/components/Dialogs/Delete'
 import Card from '@/components/Card'
 import { mapActions, mapGetters, mapMutations } from 'vuex'
@@ -310,18 +155,14 @@ export default {
 	data() {
 		return {
 			addNewClusterToggle: false,
-			addNewClusterClientToggle: false,
-			editClusterClientToggle: false,
 			dialogDeleteToggle: false,
 			updateToggle: false,
-			clusterId: '',
 			maxWidth: '700px',
 			search: '',
 			btnExport: false,
 			filteredData: [],
 			editInfo: {},
 			clientInfo: {},
-			editClientInfo: {},
 			items: {},
 			editToggle: false,
 			expanded: [],
@@ -375,7 +216,7 @@ export default {
 			clientUpdateForm: {
 				codename: this.$route.params.codename,
 				clientUuid: null,
-				gp2InfoUuid: null,
+				gpInfoUuid: null,
 				installment: null,
 				sk: null,
 				penalty: null,
@@ -388,30 +229,26 @@ export default {
 	},
 	components: {
 		Card,
-		AddNewClusterClient,
 		EditInfo,
 		AddNewCluster,
-		UpdateClient,
-		EditClient,
 		DeleteDialog,
 	},
 	created() {
-		this.filteredData = this.GP2_GETT_DATA.gp2Info || []
+		this.filteredData = this.GP_GETT_DATA_INFO.gpInfo || []
 	},
 	methods: {
 		...mapMutations('info', ['SET_INFO', 'SET_UUID', 'SET_STATUS']),
 		...mapActions({
-			GP2_GET_DATA: 'gp2/GP2_GET_DATA',
-			GP2_INSERT_CLIENT: 'gp2/GP2_INSERT_CLIENT',
-			GP2_UPDATE_CLIENT: 'gp2/GP2_UPDATE_CLIENT',
-			GP2_DELETE_CLIENT: 'gp2/GP2_DELETE_CLIENT',
-			GP2_DELETE_INFO: 'gp2/GP2_DELETE_INFO',
+			GP_INSERT_CLIENT: 'gp/GP_INSERT_CLIENT',
+			GP_UPDATE_CLIENT: 'gp/GP_UPDATE_CLIENT',
+			GP_DELETE_CLIENT: 'gp/GP_DELETE_CLIENT',
+			GP_DELETE_INFO: 'gp/GP_DELETE_INFO',
 		}),
 		refreshClients: function(data) {
 			this.filteredData.forEach((value) => {
 				if (value.uuid === data.id) {
 					data.clients.forEach((value1) => {
-						value.gp2Clients.push(value1)
+						value.gpClients.push(value1)
 						value.totals = data.totals
 					})
 				}
@@ -420,8 +257,8 @@ export default {
 		refreshUpdateClients: function(id) {
 			this.filteredData.forEach((value) => {
 				if (id === value.uuid) {
-					value.gp2Clients = value.gp2Clients.filter((value) => value.lr !== 0)
-					if (value.gp2Clients.length === 0) {
+					value.gpClients = value.gpClients.filter((value) => value.lr !== 0)
+					if (value.gpClients.length === 0) {
 						this.filteredData = this.filteredData.filter((value) => value.uuid !== id)
 					}
 				}
@@ -432,11 +269,7 @@ export default {
 			this.SET_UUID('')
 			this.SET_STATUS('')
 		},
-		dialogEditClient: function(client, items) {
-			this.editClientInfo = client
-			this.editClusterClientToggle = true
-			this.items = items
-		},
+
 		dialogEditInfo: function(info) {
 			this.editToggle = true
 			this.editInfo = info
@@ -447,13 +280,7 @@ export default {
 			this.clientInfo = client
 			this.items = items
 		},
-		dialogDeleteClient: function(client) {
-			this.dialogDeleteToggle = true
-			const { firstName, middleInitial, lastName } = client.clientInfo
-			this.SET_INFO(this.$titleize(firstName + ' ' + middleInitial + ' ' + lastName))
-			this.SET_UUID(client.uuid)
-			this.SET_STATUS('deleting-client')
-		},
+
 		dialogDeleteInfo: function(item) {
 			this.dialogDeleteToggle = true
 			const { codeNameId, staffCodeNameId } = item
@@ -463,32 +290,8 @@ export default {
 		},
 		deleted: function(uuid) {
 			this.loading = true
-			if (this.STATUS_GETT === 'deleting-client') {
-				this.GP2_DELETE_CLIENT({ uuid })
-					.then(({ data }) => {
-						this.loading = false
-						this.filteredData.forEach((value) => {
-							if (data.msg.infoId === value.uuid) {
-								value.gp2Clients = value.gp2Clients.filter((value) => value.uuid !== data.msg.clientId)
-								if (value.gp2Clients.length === 0) {
-									this.filteredData = this.filteredData.filter((value) => value.uuid !== data.msg.infoId)
-								}
-								value.totals = data.msg.totals
-							}
-						})
-
-						this.dialogDeleteToggle = false
-						this.$toasted.success(this.$titleize(this.INFO_GETT) + ' is deleted!', { icon: 'check' })
-						this.clearMutationInfo()
-					})
-					.catch((error) => {
-						console.log(error)
-						this.loading = false
-						this.$toasted.error('Something went wrong...', { icon: 'close' })
-						this.clearMutationInfo()
-					})
-			} else if (this.STATUS_GETT === 'deleting-info') {
-				this.GP2_DELETE_INFO({ uuid })
+			if (this.STATUS_GETT === 'deleting-info') {
+				this.GP_DELETE_INFO({ uuid })
 					.then(({ data }) => {
 						this.loading = false
 						console.log(data)
@@ -525,9 +328,9 @@ export default {
 				let row5 = 5
 				let row6 = 6
 				let row6_spacing = 0
-				let row12_spacing_total = 0
+				let row1_spacing_total = 0
 				this.selected.forEach((value) => {
-					let row8 = value.gp2Clients.length + 7
+					let row8 = value.gpClients.length + 7
 					worksheet.getCell(`B${row3}`).value = 'Codename:'
 					worksheet.getCell(`B${row3}`).font = { bold: true }
 					worksheet.getCell(`C${row3}`).value = (value.staffCodeNameId + '-' + value.codeNameId).toUpperCase()
@@ -553,13 +356,13 @@ export default {
 					worksheet.getCell(`I${row3}`).font = { bold: true }
 					worksheet.getCell(`J${row3}`).value = moment().format('MMMM DD, YYYY')
 
-					worksheet.getRow(row8 + row12_spacing_total).style = {
+					worksheet.getRow(row8 + row1_spacing_total).style = {
 						font: { bold: true },
 						alignment: { horizontal: 'center' },
 					}
 
-					worksheet.getCell(`B${row8 + row12_spacing_total}`).value = 'Total'
-					worksheet.mergeCells(`J${row8 + row12_spacing_total}:L${row8 + row12_spacing_total}`)
+					worksheet.getCell(`B${row8 + row1_spacing_total}`).value = 'Total'
+					worksheet.mergeCells(`J${row8 + row1_spacing_total}:L${row8 + row1_spacing_total}`)
 
 					worksheet.getRow(row5).style = {
 						font: { bold: true },
@@ -582,7 +385,7 @@ export default {
 					worksheet.getCell(`I${row5}`).value = 'Week #'
 					worksheet.getCell(`J${row5}`).value = 'Signature'
 
-					value.gp2Clients.forEach((client, index) => {
+					value.gpClients.forEach((client, index) => {
 						if (value.weeksToPay === 18) {
 							//16 weeks
 							colCum = (client.loanAmount * 124.2) / 100 - client.lr
@@ -615,27 +418,27 @@ export default {
 
 						row6++
 					})
-					worksheet.getCell(`C${row8 + row12_spacing_total}`).value = value.totals.lr
+					worksheet.getCell(`C${row8 + row1_spacing_total}`).value = value.totals.lr
 						? value.totals.lr.toLocaleString()
 						: '-'
-					worksheet.getCell(`D${row8 + row12_spacing_total}`).value = value.totals.skCum
+					worksheet.getCell(`D${row8 + row1_spacing_total}`).value = value.totals.skCum
 						? value.totals.skCum.toLocaleString()
 						: '-'
-					worksheet.getCell(`E${row8 + row12_spacing_total}`).value = value.totals.pastDue
+					worksheet.getCell(`E${row8 + row1_spacing_total}`).value = value.totals.pastDue
 						? value.totals.pastDue.toLocaleString()
 						: '-'
-					worksheet.getCell(`G${row8 + row12_spacing_total}`).value = value.totals.wi
+					worksheet.getCell(`G${row8 + row1_spacing_total}`).value = value.totals.wi
 						? value.totals.wi.toLocaleString()
 						: '-'
-					worksheet.getCell(`H${row8 + row12_spacing_total}`).value = totalColCum ? totalColCum.toLocaleString() : '-'
+					worksheet.getCell(`H${row8 + row1_spacing_total}`).value = totalColCum ? totalColCum.toLocaleString() : '-'
 
-					row3 += value.gp2Clients.length + 6
-					row4 += value.gp2Clients.length + 6
-					row5 += value.gp2Clients.length + 6
-					row8 += value.gp2Clients.length + 6
+					row3 += value.gpClients.length + 6
+					row4 += value.gpClients.length + 6
+					row5 += value.gpClients.length + 6
+					row8 += value.gpClients.length + 6
 
 					row6_spacing += 6
-					row12_spacing_total += value.gp2Clients.length + 6
+					row1_spacing_total += value.gpClients.length + 6
 				})
 				worksheet.columns.forEach((col) => {
 					const cols = worksheet.getColumn(col.number)
@@ -663,6 +466,7 @@ export default {
 				this.printToggle = true
 				this.$toasted.success('Successfully exported!', { icon: 'check' })
 			} catch (error) {
+				this.selected = []
 				console.log(error)
 				this.btnExport = false
 				this.printToggle = true
@@ -672,16 +476,22 @@ export default {
 	},
 	computed: {
 		...mapGetters({
-			GP2_GETT_DATA: 'gp2/GP2_GETT_DATA',
+			GP_GETT_DATA_INFO: 'gp/GP_GETT_DATA_INFO',
 			CLIENT_GETT_DATA_ALL: 'clients/CLIENT_GETT_DATA_ALL',
 			AUTH_GETT_USER: 'auth/AUTH_GETT_USER',
 			INFO_GETT: 'info/INFO_GETT',
 			STATUS_GETT: 'info/STATUS_GETT',
 		}),
+		staffName: function() {
+			return this.GP_GETT_DATA_INFO.firstName + ' ' + this.GP_GETT_DATA_INFO.lastName
+		},
+		codeName: function() {
+			return this.GP_GETT_DATA_INFO.codeName
+		},
 	},
 	watch: {
 		search: function(v) {
-			this.filteredData = this.GP2_GETT_DATA.gp2Info.filter((value) => value.codeNameId.includes(v.toLowerCase()))
+			this.filteredData = this.GP_GETT_DATA_INFO.gpInfo.filter((info) => info.codeNameId.includes(v.toLowerCase()))
 		},
 		selected: function(v) {
 			if (v.length === 0) {

@@ -7,9 +7,9 @@ module.exports = (sequelize, DataTypes) => {
 		 * This method is not a part of Sequelize lifecycle.
 		 * The `models/index` file will call this method automatically.
 		 */
-		static associate({ Gp2Clients }) {
+		static associate({ GpClients }) {
 			// define association here
-			this.hasMany(Gp2Clients, { foreignKey: 'id', as: 'userInfo' })
+			this.hasMany(GpClients, { foreignKey: 'id', as: 'userInfo' })
 		}
 		toJSON() {
 			return { ...this.get(), id: undefined }

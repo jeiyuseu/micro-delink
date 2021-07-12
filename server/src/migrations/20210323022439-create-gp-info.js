@@ -1,7 +1,7 @@
 'use strict'
 module.exports = {
 	up: async (queryInterface, DataTypes) => {
-		await queryInterface.createTable('gp2Infos', {
+		await queryInterface.createTable('gpInfos', {
 			id: {
 				allowNull: false,
 				autoIncrement: true,
@@ -13,7 +13,7 @@ module.exports = {
 				allowNull: false,
 			},
 
-			gp2InfoCodeId: {
+			gpInfoCodeId: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
 			},
@@ -62,6 +62,6 @@ module.exports = {
 		})
 	},
 	down: async (queryInterface, DataTypes) => {
-		await queryInterface.dropTable('gp2Infos')
+		await queryInterface.dropTable('gpInfos')
 	},
 }

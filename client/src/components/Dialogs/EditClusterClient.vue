@@ -31,7 +31,10 @@
 								autocomplete="off"
 								prepend-inner-icon="mdi-currency-php"
 								v-model.trim.number="formData.lr"
-								:rules="[(v) => !v.length >= 0 || 'Loan Receivable is required!', (v) => /^[0-9]+$/.test(v) || 'Numbers only!']"
+								:rules="[
+									(v) => !v.length >= 0 || 'Loan Receivable is required!',
+									(v) => /^[0-9]+$/.test(v) || 'Numbers only!',
+								]"
 							>
 							</v-text-field>
 						</v-col>
@@ -69,7 +72,10 @@
 								autocomplete="off"
 								prepend-inner-icon="mdi-currency-php"
 								v-model.trim.number="formData.pastDue"
-								:rules="[(v) => !v.length >= 0 || 'Past Due is required!', (v) => /^[0-9]+$/.test(v) || 'Numbers only!']"
+								:rules="[
+									(v) => !v.length >= 0 || 'Past Due is required!',
+									(v) => /^[0-9]+$/.test(v) || 'Numbers only!',
+								]"
 							>
 							</v-text-field>
 						</v-col>
@@ -78,10 +84,10 @@
 			</v-form>
 		</div>
 		<div slot="modal-action">
-			<v-btn color="primary darken-1" text @click="resetForm">
+			<v-btn color="primary darken-4" text @click="$emit('close-edit-client')">
 				Close
 			</v-btn>
-			<v-btn color="primary darken-2" class="font-weight-black" :loading="loading" @click="editClient" text>
+			<v-btn color="primary darken-4" class="font-weight-black" :loading="loading" @click="submit" text>
 				Edit
 			</v-btn>
 		</div>
@@ -89,61 +95,66 @@
 </template>
 
 <script>
-	import Dialog from './Dialog.vue'
-	import { mapActions } from 'vuex'
-	export default {
-		props: {
-			editClusterClientToggle: Boolean,
-			// clients:Array, future update for changing client
-			clientInfo: Object,
-			items: Object,
+import Dialog from './Dialog.vue'
+import { mapActions } from 'vuex'
+export default {
+	props: {
+		editClusterClientToggle: Boolean,
+		// clients:Array, future update for changing client
+		edit: Function,
+		clientInfo: Object,
+		items: Object,
+		loading: Boolean,
+	},
+
+	components: {
+		Dialog,
+	},
+
+	computed: {
+		formData: {
+			get() {
+				return Object.assign({}, this.clientInfo)
+			},
 		},
-		data() {
-			return {
-				loading: false,
+		fullName: function() {
+			return (
+				this.clientInfo.clientInfo.firstName +
+				' ' +
+				this.clientInfo.clientInfo.middleInitial +
+				' ' +
+				this.clientInfo.clientInfo.lastName
+			)
+		},
+	},
+	methods: {
+		submit: function() {
+			if (this.$refs.formEditCusterClient.validate()) {
+				this.edit(this.formData)
 			}
 		},
-
-		components: {
-			Dialog,
-		},
-
-		computed: {
-			formData: {
-				get() {
-					return Object.assign({}, this.clientInfo)
-				},
-			},
-			fullName: function() {
-				return this.clientInfo.clientInfo.firstName + ' ' + this.clientInfo.clientInfo.middleInitial + ' ' + this.clientInfo.clientInfo.lastName
-			},
-		},
-		methods: {
-			...mapActions({ GP2_EDIT_CLIENT: 'gp2/GP2_EDIT_CLIENT' }),
-			resetForm: function() {
-				this.$refs.formEditCusterClient.resetValidation(), this.$emit('close-edit-client')
-			},
-			editClient: function() {
-				if (this.$refs.formEditCusterClient.validate()) {
-					this.loading = true
-					this.GP2_EDIT_CLIENT(this.formData)
-						.then(({ data }) => {
-							for (const key in data.msg) {
-								this.clientInfo[key] = data.msg[key]
-							}
-							this.items.totals = data.msg.totals
-							this.$emit('refresh-update-clients')
-							this.loading = false
-							this.resetForm()
-							this.$toasted.success(this.$titleize(this.fullName) + ' is edited!', { icon: 'check' })
-						})
-						.catch((error) => {
-							console.log(error)
-							this.loading = false
-							this.$toasted.error('Something went wrong...', { icon: 'close' })
-						})
-				}
-			},
-		},
-	}
+		// ...mapActions({ GP_EDIT_CLIENT: 'gp/GP_EDIT_CLIENT' }),
+		// editClient: function() {
+		// 	if (this.$refs.formEditCusterClient.validate()) {
+		// 		this.loading = true
+		// 		this.GP_EDIT_CLIENT(this.formData)
+		// 			.then(({ data }) => {
+		// 				for (const key in data.msg) {
+		// 					this.clientInfo[key] = data.msg[key]
+		// 				}
+		// 				this.items.totals = data.msg.totals
+		// 				this.$emit('refresh-update-clients')
+		// 				this.loading = false
+		// 				this.resetForm()
+		// 				this.$toasted.success(this.$titleize(this.fullName) + ' is edited!', { icon: 'check' })
+		// 			})
+		// 			.catch((error) => {
+		// 				console.log(error)
+		// 				this.loading = false
+		// 				this.$toasted.error('Something went wrong...', { icon: 'close' })
+		// 			})
+		// 	}
+		// },
+	},
+}
 </script>

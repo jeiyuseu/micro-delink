@@ -8,7 +8,7 @@ const userRoutes = require('./src/routes/user.js')
 const branchRoutes = require('./src/routes/branch.js')
 const clientsRoutes = require('./src/routes/clients.js')
 const staffsRoutes = require('./src/routes/staffs.js')
-const gp2Routes = require('./src/routes/gp2.js')
+const gpRoutes = require('./src/routes/gp.js')
 require('dotenv').config()
 
 app.use(cookieParser())
@@ -21,7 +21,7 @@ app.use('/api/v1/', userRoutes)
 app.use('/api/v1/branch', branchRoutes)
 app.use('/api/v1/clients', clientsRoutes)
 app.use('/api/v1/staffs', staffsRoutes)
-app.use('/api/v1/gp2', gp2Routes)
+app.use('/api/v1/gp', gpRoutes)
 
 app.get(/.*/, (req, res) => res.sendFile(__dirname + '/public/index.html'))
 

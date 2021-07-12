@@ -9,7 +9,15 @@
 					<v-container>
 						<v-row>
 							<v-col cols="6">
-								<v-menu ref="dateOfReleased" v-model="menuDateOfReleased" :close-on-content-click="false" transition="scale-transition" offset-y max-width="290px" min-width="auto">
+								<v-menu
+									ref="dateOfReleased"
+									v-model="menuDateOfReleased"
+									:close-on-content-click="false"
+									transition="scale-transition"
+									offset-y
+									max-width="290px"
+									min-width="auto"
+								>
 									<template v-slot:activator="{ on, attrs }">
 										<v-text-field
 											label="* Date of Released"
@@ -56,7 +64,15 @@
 
 						<v-row>
 							<v-col cols="6">
-								<v-menu ref="dateOfFirstPayment" v-model="menuFirstOfPayment" :close-on-content-click="false" transition="scale-transition" offset-y max-width="290px" min-width="auto">
+								<v-menu
+									ref="dateOfFirstPayment"
+									v-model="menuFirstOfPayment"
+									:close-on-content-click="false"
+									transition="scale-transition"
+									offset-y
+									max-width="290px"
+									min-width="auto"
+								>
 									<template v-slot:activator="{ on, attrs }">
 										<v-text-field
 											label="* Date of First Payment"
@@ -99,10 +115,10 @@
 				</v-form>
 			</div>
 			<div slot="modal-action">
-				<v-btn color="primary darken-1" @click="$emit('close-renew')" text>
+				<v-btn color="primary darken-4" @click="$emit('close-renew')" text>
 					Close
 				</v-btn>
-				<v-btn color="primary darken-2" class="font-weight-black" @click="renew" :loading="loading" text>
+				<v-btn color="primary darken-4" class="font-weight-black" @click="renew" :loading="loading" text>
 					Renew
 				</v-btn>
 			</div>
@@ -111,77 +127,72 @@
 </template>
 
 <script>
-	import Dialog from './Dialog'
-	import { mapActions } from 'vuex'
-	import {EventBus} from '../../helpers/event-bus'
-	export default {
-		props: {
-			renewToggle: Boolean,
-			renewInfo:Object
-		},
-		data() {
-			return {
-				menuFirstOfPayment: false,
-				menuDateOfReleased: false,
-				loading: false,
-				formData:{}
+import Dialog from './Dialog'
+import { mapActions } from 'vuex'
+import { EventBus } from '../../helpers/event-bus'
+export default {
+	props: {
+		renewToggle: Boolean,
+	},
+	data() {
+		return {
+			menuFirstOfPayment: false,
+			menuDateOfReleased: false,
+			loading: false,
+			formData: {},
+		}
+	},
+	created() {
+		EventBus.$on('renewInfo', (item) => {
+			this.formData = Object.assign({}, item)
+		})
+	},
+	methods: {
+		...mapActions({ GP_RENEW: 'gp/GP_RENEW' }),
+		renew: function() {
+			if (this.$refs.formRenew.validate()) {
+				this.loading = true
+				const { dateOfFirstPayment, dateOfLastPayment, dateOfReleased, uuid, weeksToPay } = this.formData
+				this.GP_RENEW({
+					dateOfFirstPayment,
+					dateOfLastPayment,
+					dateOfReleased,
+					uuid,
+					weeksToPay,
+				})
+					.then(({ data }) => {
+						this.$toasted.success(this.formData.codeNo.toUpperCase() + ' renewed successfully!', { icon: 'check' })
+						this.$emit('refresh-renew-info', data.msg)
+						this.$emit('close-renew')
+						this.loading = false
+					})
+					.catch((error) => {
+						console.log(error)
+						this.loading = false
+						this.$toasted.error('Something went wrong...', { icon: 'close' })
+					})
 			}
 		},
-		created(){
-			EventBus.$on('renewInfo',(item)=>{
-				this.formData = Object.assign({}, item)
-			})
+		loanTerm: function() {
+			if (this.formData.weeksToPay === 18) {
+				const date = new Date(this.formData.dateOfFirstPayment)
+				date.setDate(date.getDate() + 126)
+				const newMonth = '0' + (date.getMonth() + 1)
+				const newDate = '0' + date.getDate()
+				const newYear = date.getFullYear()
+				this.formData.dateOfLastPayment = newYear ? `${newYear}-${newMonth.slice(-2)}-${newDate.slice(-2)}` : ''
+			} else if (this.formData.weeksToPay === 24) {
+				const date = new Date(this.formData.dateOfFirstPayment)
+				date.setDate(date.getDate() + 168)
+				const newMonth = '0' + (date.getMonth() + 1)
+				const newDate = '0' + date.getDate()
+				const newYear = date.getFullYear()
+				this.formData.dateOfLastPayment = newYear ? `${newYear}-${newMonth.slice(-2)}-${newDate.slice(-2)}` : ''
+			}
 		},
-		methods: {
-			...mapActions({ GP2_RENEW: 'gp2/GP2_RENEW' }),
-			renew: function() {
-				if (this.$refs.formRenew.validate()) {
-					this.loading = true
-					const { dateOfFirstPayment, dateOfLastPayment, dateOfReleased, uuid, weeksToPay } = this.formData
-					this.GP2_RENEW({
-						dateOfFirstPayment,
-						dateOfLastPayment,
-						dateOfReleased,
-						uuid,
-						weeksToPay,
-					})
-						.then(({ data }) => {
-							for (const key in data.msg) {
-								this.renewInfo[key] = data.msg[key]
-							}
-
-							this.$toasted.success(this.renewInfo.codeNameId.toUpperCase() + ' renewed successfully!', { icon: 'check' })
-							this.$emit('refresh-renew-clients', data.msg.uuid)
-							this.$emit('close-renew')
-							this.loading = false
-						})
-						.catch((error) => {
-							console.log(error)
-							this.loading = false
-							this.$toasted.error('Something went wrong...', { icon: 'close' })
-						})
-				}
-			},
-			loanTerm: function() {
-				if (this.formData.weeksToPay === 18) {
-					const date = new Date(this.formData.dateOfFirstPayment)
-					date.setDate(date.getDate() + 126)
-					const newMonth = '0' + (date.getMonth() + 1)
-					const newDate = '0' + date.getDate()
-					const newYear = date.getFullYear()
-					this.formData.dateOfLastPayment = newYear ? `${newYear}-${newMonth.slice(-2)}-${newDate.slice(-2)}` : ''
-				} else if (this.formData.weeksToPay === 24) {
-					const date = new Date(this.formData.dateOfFirstPayment)
-					date.setDate(date.getDate() + 168)
-					const newMonth = '0' + (date.getMonth() + 1)
-					const newDate = '0' + date.getDate()
-					const newYear = date.getFullYear()
-					this.formData.dateOfLastPayment = newYear ? `${newYear}-${newMonth.slice(-2)}-${newDate.slice(-2)}` : ''
-				}
-			},
-		},
-		components: {
-			Dialog,
-		},
-	}
+	},
+	components: {
+		Dialog,
+	},
+}
 </script>

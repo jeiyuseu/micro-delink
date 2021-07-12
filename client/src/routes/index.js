@@ -16,6 +16,22 @@ const Router = new VueRouter({
 			meta: { title: 'Dashboard', requiredAuth: true },
 		},
 		{
+			path: '/branch',
+			component: () => import('@/components/Branch'),
+			name: 'branch',
+			meta: { title: 'Branch', requiredAuth: true },
+			beforeEnter: async (to, from, next) => {
+				try {
+					await store.dispatch('branch/BRANCH_GET_DATA')
+
+					next()
+				} catch (error) {
+					console.error(error)
+					next({ name: '404' })
+				}
+			},
+		},
+		{
 			path: '/login',
 			component: () => import('@/components/Login'),
 			name: 'login',
@@ -28,109 +44,109 @@ const Router = new VueRouter({
 			meta: { title: 'Register', requiredAuth: false },
 		},
 		{
-			path: '/branch',
-			component: () => import('@/components/Branch'),
-			name: 'branch',
-			meta: { title: 'Branch', requiredAuth: true },
-			beforeEnter: async (to, from, next) => {
-				// if (store.getters['branch/GET_BRANCH'].length === 0) {
-
-				try {
-					await store.dispatch('branch/BRANCH_GET_DATA')
-					// await store.dispatch('clients/CLIENT_GET_DATA')
-					next()
-				} catch (error) {
-					console.error(error)
-					next({ name: '404' })
-				}
-
-				// } else {
-				//   next()
-				// }
-			},
+			path: '/gp2',
+			component: () => import('@/components/Dashboard'),
+			name: 'gp2-dashboard',
+			meta: { title: 'GP2 | Dashboard', requiredAuth: true },
 			children: [
 				{
-					props: true,
-					path: ':slug',
-					component: () => import('@/components/BranchStaff'),
-					name: 'branch-staff',
-					meta: { title: 'Branch Staff' },
+					path: 'branch',
+					component: () => import('@/components/Branch'),
+					name: 'gp2-branch',
+					meta: { title: 'GP2 | Branch', requiredAuth: true },
 					beforeEnter: async (to, from, next) => {
-						const existSlug = await store.getters['branch/BRANCH_GETT_DATA'].find((branch) => branch.slug === to.params.slug)
-						if (existSlug) {
-							await store.dispatch('branch/BRANCH_GET_DATA_SLUG', to.params.slug)
+						try {
+							await store.dispatch('branch/BRANCH_GET_DATA')
+
 							next()
-						} else {
+						} catch (error) {
+							console.error(error)
 							next({ name: '404' })
 						}
 					},
-				},
-				{
-					props: true,
-					path: ':slug/:codename',
-					component: () => import('@/components/BranchStaffClients'),
-					name: 'branch-staff-clients',
-					meta: { title: 'Branch Staff Clients' },
-					beforeEnter: async (to, from, next) => {
-						// const existUuid = await store.getters['gp2/GET_GP2'].find(
-						//   (gp2) => gp2.uuid === to.params.uuid
-						// )
-						// if (existUuid) {
+					children: [
+						{
+							props: true,
+							path: ':slug',
+							component: () => import('@/components/BranchStaff'),
+							name: 'branch-staff',
+							meta: { title: 'Branch Staff' },
+							beforeEnter: async (to, from, next) => {
+								const existSlug = await store.getters['branch/BRANCH_GETT_DATA'].find(
+									(branch) => branch.slug === to.params.slug
+								)
+								if (existSlug) {
+									await store.dispatch('branch/BRANCH_GET_DATA_SLUG', to.params.slug)
+									next()
+								} else {
+									next({ name: '404' })
+								}
+							},
+						},
+						{
+							props: true,
+							path: ':slug/:codename',
+							component: () => import('@/components/BranchStaffClusters'),
+							name: 'branch-staff-clients',
+							meta: { title: 'Branch Staff Clients' },
+							beforeEnter: async (to, from, next) => {
+								try {
+									await store.dispatch('gp/GP_GET_DATA_INFO', to.params.codename)
+									next()
+								} catch (error) {
+									console.error(error)
+								}
+							},
+						},
 
-						try {
-							await store.dispatch('gp2/GP2_GET_DATA', to.params.codename)
-							await store.dispatch('clients/CLIENT_GET_DATA_ALL')
-							next()
-						} catch (error) {
-							console.error(error)
-							// next({ name: '404' })
-						}
+						{
+							props: true,
+							path: ':slug/:codename/:codeno',
+							component: () => import('@/components/BranchStaffClientCluster'),
+							name: 'branch-staff-client-cluster',
+							meta: { title: 'Branch Staff Client Cluster' },
+							beforeEnter: async (to, from, next) => {
+								try {
+									await store.dispatch('gp/GP_GET_DATA_CLIENTS', to.params)
+									await store.dispatch('clients/CLIENT_GET_DATA_ALL')
+									next()
+								} catch (error) {
+									console.error(error)
+								}
+							},
+						},
 
-						// } else {
-						//   next({ name: '404' })
-						// }
-					},
-				},
-				{
-					props: true,
-					path: ':slug/:codename/completed-accounts',
-					component: () => import('@/components/CompletedAccounts'),
-					name: 'completed-accounts',
-					meta: { title: 'Completed Accounts' },
-					beforeEnter: async (to, from, next) => {
-						// next()
-						// try {
-						// 	await store.dispatch('gp2/GP2_GET_DATA_DETAILS', to.params)
-						// 	next()
-						// } catch (error) {
-						// 	console.error(error)
-						// 	next({ name: '404' })
-						// }
-
-						try {
-							await store.dispatch('gp2/GP2_GET_DATA_COMPLETED', to.params.codename)
-							next()
-						} catch (error) {
-							console.error(error)
-							// next({ name: '404' })
-						}
-					},
-				},
-				{
-					props: true,
-					path: ':slug/:codename/:uuid',
-					component: () => import('@/components/BranchStaffClientsDetails'),
-					name: 'branch-staff-clients-details',
-					meta: { title: 'Branch Staff Clients Details' },
-					beforeEnter: async (to, from, next) => {
-						try {
-							await store.dispatch('gp2/GP2_GET_DATA_DETAILS', to.params)
-							next()
-						} catch (error) {
-							console.error(error)
-							// next({ name: '404' })
-						}
-					},
+						{
+							props: true,
+							path: ':slug/:codename/:codeno/completed-accounts',
+							component: () => import('@/components/CompletedAccounts'),
+							name: 'completed-accounts',
+							meta: { title: 'Completed Accounts' },
+							beforeEnter: async (to, from, next) => {
+								try {
+									await store.dispatch('gp/GP_GET_DATA_COMPLETED', to.params)
+									next()
+								} catch (error) {
+									console.error(error)
+								}
+							},
+						},
+						{
+							props: true,
+							path: ':slug/:codename/:codeno/:uuid/payments',
+							component: () => import('@/components/BranchStaffClientsDetails'),
+							name: 'branch-staff-clients-details',
+							meta: { title: 'Branch Staff Clients Details' },
+							beforeEnter: async (to, from, next) => {
+								try {
+									await store.dispatch('gp/GP_GET_DATA_DETAILS', to.params)
+									next()
+								} catch (error) {
+									console.error(error)
+								}
+							},
+						},
+					],
 				},
 			],
 		},
@@ -148,7 +164,7 @@ const Router = new VueRouter({
 			beforeEnter: async (to, from, next) => {
 				try {
 					await store.dispatch('staffs/STAFF_GET_DATA')
-					await store.dispatch('branch/BRANCH_GET_DATA')
+
 					next()
 				} catch (error) {
 					next({ name: '404' })

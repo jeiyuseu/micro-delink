@@ -1,23 +1,23 @@
 'use strict'
 const { Model } = require('sequelize')
 module.exports = (sequelize, DataTypes) => {
-	class gp2Info extends Model {
+	class gpInfo extends Model {
 		/**
 		 * Helper method for defining associations.
 		 * This method is not a part of Sequelize lifecycle.
 		 * The `models/index` file will call this method automatically.
 		 */
-		static associate({ Gp2Clients, Staffs, Gp2InfoCode }) {
+		static associate({ GpClients, Staffs, GpInfoCode, GpDetails }) {
 			// define association here
-			this.hasMany(Gp2Clients, { foreignKey: 'infoId', as: 'gp2Clients', onDelete: 'CASCADE', hooks: true })
+			this.hasMany(GpClients, { foreignKey: 'infoId', as: 'gpClients', onDelete: 'CASCADE', hooks: true })
 			this.belongsTo(Staffs, { foreignKey: 'staffId', as: 'staffs' })
-			this.belongsTo(Gp2InfoCode, { foreignKey: 'gp2InfoCodeId', as: 'codename', onDelete: 'CASCADE', hooks: true })
+			this.belongsTo(GpInfoCode, { foreignKey: 'gpInfoCodeId', as: 'codename', onDelete: 'CASCADE', hooks: true })
 		}
 		toJSON() {
 			return {
 				...this.get(),
 				id: undefined,
-				gp2InfoCodeId: undefined,
+				gpInfoCodeId: undefined,
 				staffId: undefined,
 				branchId: undefined,
 				staffs: undefined,
@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
 			}
 		}
 	}
-	gp2Info.init(
+	gpInfo.init(
 		{
 			uuid: {
 				type: DataTypes.UUID,
@@ -39,7 +39,7 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.INTEGER,
 				allowNull: false,
 			},
-			gp2InfoCodeId: {
+			gpInfoCodeId: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
 			},
@@ -86,9 +86,9 @@ module.exports = (sequelize, DataTypes) => {
 		},
 		{
 			sequelize,
-			modelName: 'Gp2Info',
-			tableName: 'gp2Infos',
+			modelName: 'GpInfo',
+			tableName: 'gpInfos',
 		}
 	)
-	return gp2Info
+	return gpInfo
 }

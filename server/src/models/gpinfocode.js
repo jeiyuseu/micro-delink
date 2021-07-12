@@ -1,7 +1,7 @@
 'use strict'
 const { Model } = require('sequelize')
 module.exports = (sequelize, DataTypes) => {
-	class gp2InfoCode extends Model {
+	class gpInfoCode extends Model {
 		/**
 		 * Helper method for defining associations.
 		 * This method is not a part of Sequelize lifecycle.
@@ -11,21 +11,21 @@ module.exports = (sequelize, DataTypes) => {
 			// define association here
 		}
 	}
-	gp2InfoCode.init(
+	gpInfoCode.init(
 		{
 			uuid: {
 				type: DataTypes.UUID,
 				defaultValue: DataTypes.UUIDV4,
 			},
 			name: {
-				type: DataTypes.STRING(255),
+				type: DataTypes.STRING(55),
 				allowNull: false,
 			},
 		},
 		{
 			sequelize,
-			modelName: 'Gp2InfoCode',
-			tableName: 'gp2InfoCodes',
+			modelName: 'GpInfoCode',
+			tableName: 'gpInfoCodes',
 			hooks: {
 				beforeCreate: function (info) {
 					info.name = info.name.toLowerCase()
@@ -34,5 +34,5 @@ module.exports = (sequelize, DataTypes) => {
 			},
 		}
 	)
-	return gp2InfoCode
+	return gpInfoCode
 }

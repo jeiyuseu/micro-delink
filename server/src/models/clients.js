@@ -49,7 +49,7 @@ module.exports = (sequelize, DataTypes, Slugify) => {
 			},
 			slug: {
 				type: DataTypes.STRING,
-				unique:true
+				unique: true,
 			},
 		},
 		{
@@ -62,7 +62,9 @@ module.exports = (sequelize, DataTypes, Slugify) => {
 					client.lastName = client.lastName.toLowerCase()
 					client.middleInitial = client.middleInitial.toLowerCase()
 					client.address = client.address.toLowerCase()
-					client.slug = Slugify(`${client.firstName.toLowerCase()} ${client.middleInitial.toLowerCase()} ${client.lastName.toLowerCase()}`)
+					client.slug = Slugify(
+						`${client.firstName.toLowerCase()} ${client.middleInitial.toLowerCase()} ${client.lastName.toLowerCase()}`
+					)
 					return client
 				},
 			},

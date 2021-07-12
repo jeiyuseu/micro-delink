@@ -1,7 +1,7 @@
 <template>
-	<div>
+	<div class="mb-8">
 		<v-card :loading="loading" shaped elevation="10">
-			<v-card-title class="text-h5 font-weight-medium">
+			<v-card-title class="text-h5 font-weight-medium mb-2">
 				<v-row no-gutter>
 					<v-col cols="6">
 						<slot name="card-title"></slot>
@@ -11,7 +11,7 @@
 					</v-col>
 				</v-row>
 			</v-card-title>
-			<v-divider class="mx-4"></v-divider>
+
 			<v-card-text>
 				<slot name="card-text"></slot>
 			</v-card-text>
@@ -20,7 +20,7 @@
 </template>
 
 <script>
-	export default {
-		props: ['loading'],
-	}
+export default {
+	props: ['loading'],
+}
 </script>
