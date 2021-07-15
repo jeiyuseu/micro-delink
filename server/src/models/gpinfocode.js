@@ -20,6 +20,9 @@ module.exports = (sequelize, DataTypes) => {
 			name: {
 				type: DataTypes.STRING(55),
 				allowNull: false,
+				unique: {
+					msg: 'Codename is already in used!',
+				},
 			},
 		},
 		{

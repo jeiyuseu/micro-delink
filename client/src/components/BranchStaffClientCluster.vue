@@ -64,10 +64,10 @@
 								)
 							}}
 						</td>
-						<td>₱ {{ client.lr.toLocaleString() }}</td>
-						<td>₱ {{ client.skCum.toLocaleString() }}</td>
-						<td>₱ {{ client.wi.toLocaleString() }}</td>
-						<td>₱ {{ client.pastDue.toLocaleString() }}</td>
+						<td>{{ formatNumber(client.lr) }}</td>
+						<td>{{ formatNumber(client.skCum) }}</td>
+						<td>{{ formatNumber(client.wi) }}</td>
+						<td>{{ formatNumber(client.pastDue) }}</td>
 						<td>
 							{{
 								client.userInfo === null ? '' : $titleize(client.userInfo.firstName + ' ' + client.userInfo.lastName)
@@ -140,20 +140,16 @@
 					<tr class="grey lighten-3 font-weight-bold" v-if="item.gpClients.length !== 0">
 						<td class="text-center">Total</td>
 						<td>
-							₱
-							{{ item.totals.lr.toLocaleString() }}
+							{{ formatNumber(item.totals.lr) }}
 						</td>
 						<td>
-							₱
-							{{ item.totals.skCum.toLocaleString() }}
+							{{ formatNumber(item.totals.skCum) }}
 						</td>
 						<td>
-							₱
-							{{ item.totals.wi.toLocaleString() }}
+							{{ formatNumber(item.totals.wi) }}
 						</td>
 						<td>
-							₱
-							{{ item.totals.pastDue.toLocaleString() }}
+							{{ formatNumber(item.totals.pastDue) }}
 						</td>
 
 						<td></td>
@@ -374,6 +370,9 @@ export default {
 			this.SET_INFO('')
 			this.SET_UUID('')
 			this.SET_STATUS('')
+		},
+		formatNumber: function(value) {
+			return value && value.toLocaleString('en-PH', { style: 'currency', currency: 'PHP' })
 		},
 	},
 	computed: {

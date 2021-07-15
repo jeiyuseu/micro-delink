@@ -7,11 +7,13 @@ module.exports = (sequelize, DataTypes) => {
 		 * This method is not a part of Sequelize lifecycle.
 		 * The `models/index` file will call this method automatically.
 		 */
-		static associate({ GpInfo, Clients, Users, GpDetails }) {
+		static associate({ GpInfo, Clients, Users, GpDetails, GpWithdrawals }) {
 			// define association here
 			this.belongsTo(GpInfo, { foreignKey: 'infoId', as: 'gpInfo' })
 			this.belongsTo(Clients, { foreignKey: 'clientId', as: 'clientInfo' })
 			this.belongsTo(Users, { foreignKey: 'updatedBy', as: 'userInfo' })
+			this.hasMany(GpWithdrawals, { foreignKey: 'gpClientId', as: 'gpWithdrawals' })
+
 			this.hasMany(GpDetails, {
 				foreignKey: 'gpClientId',
 				onDelete: 'CASCADE',
@@ -42,14 +44,7 @@ module.exports = (sequelize, DataTypes) => {
 								include: ['clientInfo'],
 							})
 							.then((result) => {
-								next(
-									result.clientInfo.firstName +
-										' ' +
-										result.clientInfo.middleInitial +
-										' ' +
-										result.clientInfo.lastName +
-										' is exists!'
-								)
+								next(result.clientInfo.firstName + ' ' + result.clientInfo.middleInitial + ' ' + result.clientInfo.lastName + ' is exists!')
 							})
 							.catch(() => next())
 					},
@@ -87,6 +82,11 @@ module.exports = (sequelize, DataTypes) => {
 			sequelize,
 			modelName: 'GpClients',
 			tableName: 'gpClients',
+			hooks: {
+				beforeUpdate: function (value) {
+					Cli
+				},
+			},
 		}
 	)
 	return gpClients

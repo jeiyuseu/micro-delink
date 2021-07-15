@@ -44,6 +44,10 @@ module.exports = (sequelize, DataTypes, Slugify) => {
 			loanCycle: {
 				type: DataTypes.INTEGER,
 			},
+			skCum: {
+				type: DataTypes.INTEGER,
+				defaultValue: 0,
+			},
 			contactNo: {
 				type: DataTypes.STRING,
 			},

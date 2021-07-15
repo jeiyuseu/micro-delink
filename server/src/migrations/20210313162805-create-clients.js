@@ -33,6 +33,9 @@ module.exports = {
 			loanCycle: {
 				type: DataTypes.INTEGER,
 			},
+			skCum: {
+				type: DataTypes.INTEGER,
+			},
 			contactNo: {
 				type: DataTypes.STRING,
 			},
@@ -46,7 +49,7 @@ module.exports = {
 			},
 			slug: {
 				type: DataTypes.STRING,
-				unique:true
+				unique: true,
 			},
 		})
 	},

@@ -10,10 +10,12 @@ module.exports = {
 			},
 			uuid: {
 				type: DataTypes.UUID,
+				allowNull: false,
 			},
 			name: {
 				type: DataTypes.STRING(255),
 				allowNull: false,
+				unique: true,
 			},
 			createdAt: {
 				allowNull: false,

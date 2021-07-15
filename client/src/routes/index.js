@@ -125,6 +125,7 @@ const Router = new VueRouter({
 							beforeEnter: async (to, from, next) => {
 								try {
 									await store.dispatch('gp/GP_GET_DATA_COMPLETED', to.params)
+									await store.dispatch('gp/GP_GET_DATA_WITHDRAWALS', to.params)
 									next()
 								} catch (error) {
 									console.error(error)

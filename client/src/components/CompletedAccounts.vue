@@ -44,42 +44,20 @@
 						<tr v-for="(client, i) in item.gpClients" :key="i" class="font-weight-bold ">
 							<td>
 								{{ parseInt(i) + 1 }}.
-								{{
-									$titleize(
-										client.clientInfo.firstName +
-											' ' +
-											client.clientInfo.middleInitial +
-											' ' +
-											client.clientInfo.lastName
-									)
-								}}
+								{{ $titleize(client.clientInfo.firstName + ' ' + client.clientInfo.middleInitial + ' ' + client.clientInfo.lastName) }}
 							</td>
-							<td>₱ {{ client.lr.toLocaleString() }}</td>
-							<td>₱ {{ client.skCum.toLocaleString() }}</td>
-							<td>₱ {{ client.wi.toLocaleString() }}</td>
-							<td>₱ {{ client.pastDue.toLocaleString() }}</td>
+							<td>{{ formatNumber(client.lr) }}</td>
+							<td>{{ formatNumber(client.skCum) }}</td>
+							<td>{{ formatNumber(client.wi) }}</td>
+							<td>{{ formatNumber(client.pastDue) }}</td>
 							<td>
-								{{
-									client.userInfo === null ? '' : $titleize(client.userInfo.firstName + ' ' + client.userInfo.lastName)
-								}}
-								{{
-									client.userInfo === null
-										? ''
-										: moment(client.updatedAt).fromNow()
-										? ' | ' + moment(client.updatedAt).fromNow()
-										: ''
-								}}
+								{{ client.userInfo === null ? '' : $titleize(client.userInfo.firstName + ' ' + client.userInfo.lastName) }}
+								{{ client.userInfo === null ? '' : moment(client.updatedAt).fromNow() ? ' | ' + moment(client.updatedAt).fromNow() : '' }}
 							</td>
 							<td class="text-center">
 								<v-tooltip bottom>
 									<template v-slot:activator="{ on, attrs }">
-										<v-icon
-											color="blue darken-4"
-											@click="dialogEditClient(client, item)"
-											v-bind="attrs"
-											v-on="on"
-											class="mr-2"
-										>
+										<v-icon color="blue darken-4" @click="dialogEditClient(client, item)" v-bind="attrs" v-on="on" class="mr-2">
 											mdi-pencil
 										</v-icon>
 									</template>
@@ -102,7 +80,29 @@
 								</v-tooltip>
 								<v-tooltip bottom>
 									<template v-slot:activator="{ on, attrs }">
-										<v-btn @click="dialogDeleteClient(client)" icon color="red darken-4" v-bind="attrs" v-on="on">
+										<v-icon
+											color="green darken-4"
+											@click="dialogWithdraw(client, item)"
+											v-bind="attrs"
+											v-on="on"
+											class="mr-2"
+											:disabled="client.skCum === 0"
+										>
+											mdi-arrow-down-bold-circle-outline
+										</v-icon>
+									</template>
+									<span>Withdraw</span>
+								</v-tooltip>
+								<v-tooltip bottom>
+									<template v-slot:activator="{ on, attrs }">
+										<v-btn
+											:disabled="client.skCum !== 0"
+											@click="dialogDeleteClient(client)"
+											icon
+											color="red darken-4"
+											v-bind="attrs"
+											v-on="on"
+										>
 											<v-icon> mdi-delete </v-icon>
 										</v-btn>
 									</template>
@@ -117,20 +117,16 @@
 						<tr class="grey lighten-3 font-weight-bold" v-if="item.gpClients.length !== 0">
 							<td class="text-center">Total</td>
 							<td>
-								₱
-								{{ item.totals.lr.toLocaleString() }}
+								{{ formatNumber(item.totals.lr) }}
 							</td>
 							<td>
-								₱
-								{{ item.totals.skCum.toLocaleString() }}
+								{{ formatNumber(item.totals.skCum) }}
 							</td>
 							<td>
-								₱
-								{{ item.totals.wi.toLocaleString() }}
+								{{ formatNumber(item.totals.wi) }}
 							</td>
 							<td>
-								₱
-								{{ item.totals.pastDue.toLocaleString() }}
+								{{ formatNumber(item.totals.pastDue) }}
 							</td>
 
 							<td></td>
@@ -159,23 +155,32 @@
 					:deleted="deleted"
 					@close-delete="dialogDeleteToggle = false"
 				/>
+				<DeleteDialog />
+				<WithdrawDialog
+					:dialogWithdrawToggle="dialogWithdrawToggle"
+					:items="items"
+					:loading="loading"
+					:withdraw="withdraw"
+					@close-withdraw="dialogWithdrawToggle = false"
+				/>
 			</div>
 		</Card>
-		<Withdrawals />
+		<Withdrawals :responseWithdraw="responseWithdraw" :responseEdit="responseEdit" />
 	</div>
 </template>
 
 <script>
 import Card from './Card'
-
 import EditClient from '@/components/Dialogs/EditClusterClient'
 import Renew from '@/components/Dialogs/Renew'
 import Reloan from '@/components/Dialogs/Reloan'
 import Withdrawals from '@/components/Withdrawals'
+import WithdrawDialog from '@/components/Dialogs/Withdraw'
 import DeleteDialog from '@/components/Dialogs/Delete'
 import { mapActions, mapGetters, mapMutations } from 'vuex'
-import moment from 'moment'
 import { EventBus } from '../helpers/event-bus'
+import moment from 'moment'
+
 export default {
 	data() {
 		return {
@@ -184,11 +189,14 @@ export default {
 			editClusterClientToggle: false,
 			reloanToggle: false,
 			dialogDeleteToggle: false,
+			dialogWithdrawToggle: false,
 			loading: false,
 			clusterId: '',
 			editClientInfo: {},
 			reloanInfo: {},
 			clientInfo: {},
+			responseEdit: {},
+			responseWithdraw: {},
 			items: {},
 			headers: [
 				{
@@ -238,6 +246,7 @@ export default {
 		...mapActions({
 			GP_EDIT_CLIENT_COMPLETED: 'gp/GP_EDIT_CLIENT_COMPLETED',
 			GP_DELETE_CLIENT_COMPLETED: 'gp/GP_DELETE_CLIENT_COMPLETED',
+			GP_INSERT_WITHDRAWALS: 'gp/GP_INSERT_WITHDRAWALS',
 		}),
 		dialogDeleteClient: function(client) {
 			this.dialogDeleteToggle = true
@@ -245,6 +254,10 @@ export default {
 			this.SET_INFO(this.$titleize(firstName + ' ' + middleInitial + ' ' + lastName))
 			this.SET_UUID(client.uuid)
 			this.SET_STATUS('deleting-client')
+		},
+		dialogWithdraw: function(client, item) {
+			this.items = { clientId: client.uuid, uuid: item.uuid, skCum: client.skCum }
+			this.dialogWithdrawToggle = true
 		},
 		refreshRenewInfo: function(data) {
 			delete data.uuid
@@ -260,19 +273,21 @@ export default {
 			this.GP_EDIT_CLIENT_COMPLETED(formData)
 				.then(({ data }) => {
 					this.filteredData.gpClients.forEach((value) => {
-						if (value.uuid === data.msg.uuid) {
-							for (const key in data.msg) {
+						if (value.clientInfo.uuid === data.msg.clientInfo.uuid) {
+							value.clientInfo.skCum = data.msg.clientInfo.skCum
+							for (const key in value) {
 								value[key] = data.msg[key]
 							}
 							this.$toasted.success(
-								this.$titleize(
-									value.clientInfo.firstName + ' ' + value.clientInfo.middleInitial + ' ' + value.clientInfo.lastName
-								) + ' is edited!',
+								this.$titleize(value.clientInfo.firstName + ' ' + value.clientInfo.middleInitial + ' ' + value.clientInfo.lastName) +
+									' is edited!',
 								{ icon: 'check' }
 							)
 						}
 					})
+
 					this.filteredData.totals = data.msg.totals
+					this.responseEdit = data.msg
 					this.refreshReloanClients()
 					this.loading = false
 					this.editClusterClientToggle = false
@@ -289,9 +304,7 @@ export default {
 				this.GP_DELETE_CLIENT_COMPLETED({ uuid })
 					.then(({ data }) => {
 						this.loading = false
-						this.filteredData.gpClients = this.filteredData.gpClients.filter(
-							(value) => value.uuid !== data.msg.clientId
-						)
+						this.filteredData.gpClients = this.filteredData.gpClients.filter((value) => value.uuid !== data.msg.clientId)
 						this.filteredData.totals = data.msg.totals
 						this.dialogDeleteToggle = false
 						this.$toasted.success(this.$titleize(this.INFO_GETT) + ' is deleted!', { icon: 'check' })
@@ -308,6 +321,30 @@ export default {
 				this.$toasted.error('Something went wrong...', { icon: 'close' })
 				this.clearMutationInfo()
 			}
+		},
+		withdraw: function(data) {
+			this.loading = true
+			this.GP_INSERT_WITHDRAWALS(data)
+				.then(({ data }) => {
+					this.filteredData.gpClients.forEach((value) => {
+						if (value.clientInfo.uuid === data.msg.clientInfo.uuid) {
+							value.clientInfo.skCum = data.msg.clientInfo.skCum
+							value.skCum = data.msg.clientInfo.skCum
+						}
+					})
+
+					this.filteredData.totals.skCum = data.msg.totals.skCum
+					this.responseWithdraw = data.msg
+					this.loading = false
+					this.dialogWithdrawToggle = false
+					this.$toasted.success('Successfully withdraw!', { icon: 'check' })
+				})
+				.catch((error) => {
+					this.$toasted.error('Something went wrong...', { icon: 'close' })
+					console.log(error)
+					this.loading = false
+					this.dialogWithdrawToggle = false
+				})
 		},
 		renew: function() {
 			const { uuid, dateOfFirstPayment, dateOfLastPayment, dateOfReleased, weeksToPay } = this.filteredData
@@ -330,6 +367,9 @@ export default {
 			this.editClientInfo = client
 			this.items = items
 			this.editClusterClientToggle = true
+		},
+		formatNumber: function(value) {
+			return value && value.toLocaleString('en-PH', { style: 'currency', currency: 'PHP' })
 		},
 		clearMutationInfo: function() {
 			this.SET_INFO('')
@@ -381,6 +421,7 @@ export default {
 		Reloan,
 		DeleteDialog,
 		Withdrawals,
+		WithdrawDialog,
 	},
 }
 </script>

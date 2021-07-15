@@ -75,7 +75,21 @@ export default {
 				api
 					.get(`gp/${codename}/${codeno}/withdrawals`)
 					.then((response) => {
-						commit('GP_SET_DATA_COMPLETED', response.data)
+						commit('GP_SET_DATA_WITHDRAWALS', response.data)
+						resolve(response)
+					})
+					.catch((error) => {
+						reject(error)
+					})
+			})
+		},
+		GP_INSERT_WITHDRAWALS: (context, payload) => {
+			const { codename } = routes.currentRoute.params
+			const { uuid, amount, clientId } = payload
+			return new Promise((resolve, reject) => {
+				api
+					.post(`gp/${codename}/${uuid}/withdraw`, { amount, clientId })
+					.then((response) => {
 						resolve(response)
 					})
 					.catch((error) => {

@@ -26,7 +26,7 @@
 							<td>
 								{{ $titleize(item.firstName + ' ' + item.lastName) }}
 							</td>
-							<td>{{ item.codeName.toUpperCase() }}- GP</td>
+							<td>{{ item.codeName.toUpperCase() }}-GP2</td>
 							<td class="text-center ">
 								<v-btn color="primary" rounded :to="`${$route.params.slug}/${item.codeName}`" class="mr-2">
 									<v-icon dark left>

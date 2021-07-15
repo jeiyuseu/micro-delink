@@ -12,11 +12,11 @@
 					:search="search"
 				>
 					<template v-slot:item="{ item, headers }">
-						<tr v-for="detail in item.details" :key="detail.uuid">
+						<tr class="font-weight-bold" v-for="detail in item.details" :key="detail.uuid">
 							<td>{{ formatDate(detail.createdAt) }}</td>
-							<td>₱ {{ detail.payment.toLocaleString() }}</td>
-							<td>₱ {{ detail.sk.toLocaleString() }}</td>
-							<td>₱ {{ detail.penalty.toLocaleString() }}</td>
+							<td>{{ formatNumber(detail.payment) }}</td>
+							<td>{{ formatNumber(detail.sk) }}</td>
+							<td>{{ formatNumber(detail.penalty) }}</td>
 							<td>{{ formatDate(detail.updatedAt) }}</td>
 							<td>
 								<v-btn @click="dialogEditDetails(detail)" icon
@@ -35,10 +35,9 @@
 					<template v-slot:[`body.append`]="{ items }" v-if="filteredData.details.length !== 0">
 						<tr class="font-weight-bold" v-for="(item, i) in items" :key="i">
 							<td>Totals</td>
-							<td>₱ {{ parseInt(item.totals.payment).toLocaleString() }}</td>
-							<td>₱ {{ parseInt(item.totals.sk).toLocaleString() }}</td>
-							<td>₱ {{ parseInt(item.totals.penalty).toLocaleString() }}</td>
-
+							<td>{{ formatNumber(item.totals.payment) }}</td>
+							<td>{{ formatNumber(item.totals.sk) }}</td>
+							<td>{{ formatNumber(item.totals.penalty) }}</td>
 							<td></td>
 							<td></td>
 						</tr>
@@ -111,6 +110,9 @@ export default {
 		},
 		formatDate(date) {
 			return moment(date).format('MMMM DD, YYYY')
+		},
+		formatNumber: function(value) {
+			return value && value.toLocaleString('en-PH', { style: 'currency', currency: 'PHP' })
 		},
 	},
 	computed: {

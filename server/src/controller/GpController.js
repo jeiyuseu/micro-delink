@@ -1,18 +1,7 @@
 'use strict'
-const {
-	GpInfo,
-	GpClients,
-	GpDetails,
-	Branch,
-	Staffs,
-	Clients,
-	Users,
-	GpInfoCode,
-	GpWithdrawals,
-	Op,
-	sequelize,
-} = require('../models')
+const { GpInfo, GpClients, GpDetails, Branch, Staffs, Clients, Users, GpInfoCode, GpWithdrawals, Op, sequelize } = require('../models')
 const gpinfo = require('../models/gpinfo')
+const jwtDecode = require('jsonwebtoken')
 
 module.exports = {
 	index: async (req, res) => {
@@ -151,7 +140,6 @@ module.exports = {
 				...gpinfo.toJSON(),
 				...gpinfo.staffs.toJSON(),
 				...gpinfo.codename.toJSON(),
-
 				totals,
 			})
 		} catch (error) {
@@ -163,20 +151,13 @@ module.exports = {
 
 		try {
 			const gpinfo = await GpInfo.findOne({
-				attributes: [
-					'isVirgin',
-					'uuid',
-					'weeksToPay',
-					'loanCycle',
-					'dateOfFirstPayment',
-					'dateOfReleased',
-					'dateOfLastPayment',
-				],
+				attributes: ['isVirgin', 'uuid', 'weeksToPay', 'loanCycle', 'dateOfFirstPayment', 'dateOfReleased', 'dateOfLastPayment'],
 				include: [
 					{
 						model: GpClients,
 						as: 'gpClients',
 						where: { lr: 0 },
+						attributes: ['createdAt', 'loanAmount', 'lr', 'pastDue', 'skCum', 'updatedAt', 'updatedBy', 'uuid', 'weeks', 'wi'],
 						required: false,
 						include: [
 							{
@@ -188,7 +169,7 @@ module.exports = {
 								model: Clients,
 								as: 'clientInfo',
 								order: [['firstName', 'ASC']],
-								attributes: ['uuid', 'firstName', 'middleInitial', 'lastName', 'slug'],
+								attributes: ['uuid', 'firstName', 'middleInitial', 'lastName', 'slug', 'skCum'],
 							},
 						],
 					},
@@ -226,15 +207,148 @@ module.exports = {
 				totals,
 			})
 		} catch (error) {
-			return res.status(400).send({ error: error, msg: error.message })
+			return res.status(400).send({ status: 400, success: false, error: error, msg: error.message })
 		}
 	},
 	withdrawals: async (req, res) => {
+		const { codename, codeno } = req.params
+
 		try {
-			const gpwithdrawals = await GpWithdrawals.findAll({ gp2Info: 1 })
-			return res.status(200).send(gpwithdrawals)
+			let gpinfo = await GpInfo.findOne({
+				attributes: [],
+				include: [
+					{ model: Staffs, as: 'staffs', attributes: ['codeName'], where: { codeName: codename } },
+					{ model: GpInfoCode, as: 'codename', attributes: ['name'], where: { name: codeno } },
+					{
+						model: GpWithdrawals,
+						as: 'gpWithdrawals',
+						attributes: ['uuid', 'amount', 'createdAt', 'updatedAt'],
+						include: [
+							{
+								model: GpClients,
+								as: 'gpClients',
+								required: false,
+								attributes: ['uuid', 'skCum'],
+								where: { lr: 0 },
+							},
+							{
+								model: Clients,
+								as: 'clientInfo',
+								required: false,
+								attributes: ['uuid', 'firstName', 'middleInitial', 'lastName', 'skCum'],
+							},
+							{
+								model: Users,
+								as: 'userInfo',
+								attributes: ['firstName', 'lastName'],
+							},
+						],
+					},
+				],
+			})
+
+			const totals = {
+				amountWithdraw: gpinfo.gpWithdrawals.reduce((a, b) => {
+					return a + b.amount
+				}, 0),
+			}
+
+			return res.status(200).send({ status: 200, success: true, msg: { gpWithdrawals: gpinfo.gpWithdrawals, totals } })
 		} catch (error) {
-			return res.status(400).send({ error })
+			console.log(error)
+			return res.status(400).send({ status: 400, success: false, error, msg: error.message })
+		}
+	},
+	postWithdrawals: async (req, res) => {
+		let token = req.cookies['_token']
+		const { uuid } = req.params
+		const { amount, clientId } = req.body
+		console.log('body', req.body)
+		try {
+			const gpinfo = await GpInfo.findOne({
+				where: { uuid },
+				attributes: ['id'],
+			})
+
+			const gpclients = await GpClients.findOne({
+				attributes: ['id', 'clientId', 'uuid', 'skCum'],
+				where: { [Op.and]: [{ uuid: clientId, infoId: gpinfo.id }] },
+			})
+			console.log(gpclients)
+			token = jwtDecode.verify(token, process.env.JWT_KEY_REFRESH)
+
+			const users = await Users.findOne({ attributes: ['id', 'firstName', 'lastName'], where: { uuid: token.uuid } })
+			let amountWithdraw
+			if (gpclients.skCum >= amount) {
+				amountWithdraw = gpclients.skCum - amount
+			} else {
+				amountWithdraw = 0
+			}
+			const client = await GpClients.update(
+				{ skCum: amountWithdraw },
+				{
+					where: { [Op.and]: [{ uuid: clientId, infoId: gpinfo.id }] },
+					returning: ['skCum', 'clientId'],
+				}
+			)
+			await Clients.update({ skCum: amountWithdraw }, { fields: ['skCum'], silent: true, where: { id: client[1][0].clientId } })
+			const gpwithdraw = await GpWithdrawals.create(
+				{
+					clientId: gpclients.clientId,
+					gpInfoId: gpinfo.id,
+					gpClientId: gpclients.id,
+					amount,
+					withdrawBy: users.id,
+				},
+				{ returning: ['amount', 'createdAt', 'updatedAt', 'uuid'] }
+			)
+			const gpinfototal = await GpInfo.findOne({
+				where: { uuid },
+				attributes: [],
+				include: [
+					{
+						model: GpWithdrawals,
+						as: 'gpWithdrawals',
+						attributes: ['amount'],
+					},
+					{
+						model: GpClients,
+						as: 'gpClients',
+						attributes: ['uuid', 'skCum'],
+						where: { lr: 0 },
+						include: [{ model: Clients, as: 'clientInfo', attributes: ['firstName', 'middleInitial', 'lastName', 'skCum'] }],
+					},
+				],
+			})
+			const gpclientwithdraw = await GpClients.findOne({
+				attributes: ['skCum', 'uuid', 'clientId'],
+				where: { [Op.and]: [{ id: gpwithdraw.gpClientId, lr: 0 }] },
+				include: [{ model: Clients, as: 'clientInfo', attributes: ['firstName', 'middleInitial', 'lastName', 'skCum', 'uuid'] }],
+			})
+			await Clients.update({ skCum: gpclientwithdraw.skCum }, { fields: ['skCum'], silent: true, where: { id: gpclientwithdraw.clientId } })
+			const payload = {
+				amount: gpwithdraw.amount,
+				createdAt: gpwithdraw.createdAt,
+				updatedAt: gpwithdraw.updatedAt,
+				clientInfo: gpclientwithdraw.clientInfo,
+				userInfo: {
+					firstName: users.firstName,
+					lastName: users.lastName,
+				},
+				totals: {
+					skCum: gpinfototal.gpClients.reduce((a, b) => {
+						return a + b.skCum
+					}, 0),
+					amountWithdraw: gpinfototal.gpWithdrawals.reduce((a, b) => {
+						return a + b.amount
+					}, 0),
+				},
+			}
+
+			return res.status(200).send({ status: 200, success: true, msg: payload })
+		} catch (error) {
+			console.log(error)
+			return res.status(400).send({ error: error.message })
 		}
 	},
 	post: async (req, res) => {
@@ -282,12 +396,18 @@ module.exports = {
 				where: { uuid },
 				include: [
 					{
+						model: Clients,
+						as: 'clientInfo',
+						attributes: ['skCum'],
+					},
+					{
 						model: GpInfo,
 						as: 'gpInfo',
 						attributes: ['id', 'uuid', 'branchId'],
 					},
 				],
 			})
+
 			const userInfo = await Users.findOne({
 				where: { uuid: userId },
 				attributes: ['id', 'firstName', 'lastName'],
@@ -303,23 +423,13 @@ module.exports = {
 			}
 			const lr = gpclients.lr - installment
 			const skCum = gpclients.skCum + sk
+			await Clients.update({ skCum: skCum + gpclients.skCum }, { fields: ['skCum'], silent: true, where: { id: gpclients.clientId } })
 			await GpInfo.update({ isVirgin: false }, { where: { uuid: gpclients.gpInfo.uuid }, sideEffects: false })
 			let gpclientsupdate = await GpClients.update(
 				{ lr, skCum, updatedBy: userInfo.id },
 				{
 					where: { uuid },
-					returning: [
-						'createdAt',
-						'infoId',
-						'loanAmount',
-						'lr',
-						'pastDue',
-						'skCum',
-						'updatedAt',
-						'updatedBy',
-						'uuid',
-						'wi',
-					],
+					returning: ['createdAt', 'infoId', 'loanAmount', 'lr', 'pastDue', 'skCum', 'updatedAt', 'updatedBy', 'uuid', 'wi'],
 				}
 			)
 
@@ -470,20 +580,10 @@ module.exports = {
 				{ lr, wi, skCum, pastDue, updatedBy: user.id },
 				{
 					where: { uuid },
-					returning: [
-						'loanAmount',
-						'lr',
-						'pastDue',
-						'skCum',
-						'weeks',
-						'wi',
-						'updatedAt',
-						'updatedBy',
-						'infoId',
-						'uuid',
-					],
+					returning: ['loanAmount', 'lr', 'pastDue', 'skCum', 'weeks', 'wi', 'updatedAt', 'updatedBy', 'infoId', 'uuid', 'clientId'],
 				}
 			)
+			await Clients.update({ skCum }, { fields: ['skCum'], silent: true, where: { id: gpclient[1][0].clientId } })
 			const gpinfo = await GpInfo.findOne({
 				where: { id: gpclient[1][0].infoId },
 				include: [
@@ -543,50 +643,54 @@ module.exports = {
 				{ lr, wi, skCum, pastDue, updatedBy: user.id },
 				{
 					where: { uuid },
-					returning: [
-						'uuid',
-						'loanAmount',
-						'lr',
-						'pastDue',
-						'skCum',
-						'weeks',
-						'wi',
-						'updatedAt',
-						'updatedBy',
-						'infoId',
-					],
+					returning: ['uuid', 'loanAmount', 'lr', 'pastDue', 'skCum', 'weeks', 'wi', 'updatedAt', 'createdAt', 'infoId', 'clientId'],
 				}
 			)
-			const gpinfo = await GpInfo.findOne({
+			const client = await Clients.update(
+				{ skCum },
+				{
+					fields: ['skCum'],
+					returning: ['firstName', 'middleInitial', 'lastName', 'uuid', 'skCum'],
+					silent: true,
+					where: { id: gpclient[1][0].clientId },
+				}
+			)
+
+			const gpinfototal = await GpInfo.findOne({
 				where: { id: gpclient[1][0].infoId },
+				attributes: [],
 				include: [
 					{
 						model: GpClients,
 						as: 'gpClients',
+						required: false,
 						where: { lr: 0 },
 					},
 				],
 			})
-			gpclient[1][0].infoId = gpclient.uuid
+
 			let payload = {}
-			gpclient[1].forEach((value) => {
+			client[1].forEach((value) => {
 				payload = {
-					...value.toJSON(),
+					...gpclient[1][0].toJSON(),
+					clientId: undefined,
+					infoId: undefined,
+					clientInfo: value,
 					userInfo: user,
 					totals: {
-						loanAmount: gpinfo.gpClients.reduce((a, b) => {
+						loanAmount: gpinfototal.gpClients.reduce((a, b) => {
 							return a + b.loanAmount
 						}, 0),
-						lr: gpinfo.gpClients.reduce((a, b) => {
+						lr: gpinfototal.gpClients.reduce((a, b) => {
 							return a + b.lr
 						}, 0),
-						skCum: gpinfo.gpClients.reduce((a, b) => {
+						skCum: gpinfototal.gpClients.reduce((a, b) => {
 							return a + b.skCum
 						}, 0),
-						wi: gpinfo.gpClients.reduce((a, b) => {
+						wi: gpinfototal.gpClients.reduce((a, b) => {
 							return a + b.wi
 						}, 0),
-						pastDue: gpinfo.gpClients.reduce((a, b) => {
+						pastDue: gpinfototal.gpClients.reduce((a, b) => {
 							return a + b.pastDue
 						}, 0),
 					},
@@ -595,6 +699,7 @@ module.exports = {
 
 			return res.status(200).send({ status: 200, success: true, msg: payload })
 		} catch (error) {
+			console.log(error)
 			return res.status(400).send({
 				status: 400,
 				success: false,
@@ -730,6 +835,11 @@ module.exports = {
 				by: 1,
 				where: { uuid },
 			})
+			const loancyle = await GpInfo.findOne({
+				where: { uuid },
+				attributes: [],
+				include: [{ model: GpClients, as: 'gpClients', where: { lr: 0 }, attributes: ['clientId'] }],
+			})
 			let payload = {}
 			gpinfos[0][0].forEach((value, index) => {
 				payload = {
@@ -742,6 +852,11 @@ module.exports = {
 					isVirgin: value.isVirgin,
 				}
 			})
+			console.log(loancyle.gpClients.map((value) => value.id))
+			await Clients.update(
+				{ loanCycle: payload.loanCycle },
+				{ fields: ['loanCycle'], silent: true, where: { id: { [Op.in]: loancyle.gpClients.map((value) => value.clientId) } } }
+			)
 			return res.status(200).send({ status: 200, success: true, msg: payload })
 		} catch (error) {
 			return res.status(400).send({ status: 400, success: true, error: error.message })

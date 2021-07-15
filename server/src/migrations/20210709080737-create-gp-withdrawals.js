@@ -8,6 +8,14 @@ module.exports = {
 				primaryKey: true,
 				type: DataTypes.INTEGER,
 			},
+			uuid: {
+				type: DataTypes.UUID,
+				allowNull: false,
+			},
+			clientId: {
+				type: DataTypes.INTEGER,
+				allowNull: false,
+			},
 			gpInfoId: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
@@ -17,6 +25,10 @@ module.exports = {
 				allowNull: false,
 			},
 			amount: {
+				type: DataTypes.INTEGER,
+				allowNull: false,
+			},
+			withdrawBy: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
 			},
